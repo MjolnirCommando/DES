@@ -7,7 +7,7 @@ package me.edwards.des.block;
  */
 public class BlockChain
 {
-    private Node genesis;
+    private int size;
     private Node top;
     
     /**
@@ -16,10 +16,10 @@ public class BlockChain
      */
     public BlockChain(Block genesis)
     {
-        this.genesis = new Node();
-        this.genesis.height = 0;
-        this.genesis.block = genesis;
-        this.top = this.genesis;
+        this.top = new Node();
+        this.top.height = 0;
+        this.top.block = genesis;
+        this.size = 1;
     }
     
     /**
@@ -30,10 +30,10 @@ public class BlockChain
     {
         Node second = top;
         top = new Node();
-        second.child = top;
         top.parent = second;
         top.height = second.height + 1;
         top.block = block;
+        size++;
     }
     
     /**
@@ -45,10 +45,18 @@ public class BlockChain
         return top.block;
     }
     
+    /**
+     * Returns the number of nodes in this BlockChain
+     * @return
+     */
+    public int getSize()
+    {
+        return size;
+    }
+    
     private class Node
     {
         private Node parent;
-        private Node child;
         private int height;
         private Block block;
     }

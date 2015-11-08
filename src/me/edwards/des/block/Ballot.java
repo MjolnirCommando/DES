@@ -51,6 +51,24 @@ public class Ballot
     }
     
     /**
+     * Returns the Ballot ID
+     * @return
+     */
+    public String getID()
+    {
+        return id;
+    }
+    
+    /**
+     * Returns the Ballot signature
+     * @return
+     */
+    public String getSignature()
+    {
+        return signature;
+    }
+    
+    /**
      * Returns the signature root hash of this ballot
      * @return
      */

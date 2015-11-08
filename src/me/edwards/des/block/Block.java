@@ -30,7 +30,7 @@ public class Block
     private int nonce;
     private ArrayList<Ballot> ballots;
     
-    private byte[] myBytes;
+    private byte[] headerBytes;
     private String myHash;
     private boolean valid;
     
@@ -72,8 +72,8 @@ public class Block
         this.time = (int) (System.currentTimeMillis() / 60000);
         this.merkleRootHash = HashUtil.generateLeadingZeros(getMerkleRoot(0, 0));
         genBytes();
-        this.nonce = HashUtil.generateProof(myBytes, target);
-        this.myHash = HashUtil.generateLeadingZeros(HashUtil.generateBlockHash(myBytes, nonce));
+        this.nonce = HashUtil.generateProof(headerBytes, target);
+        this.myHash = HashUtil.generateLeadingZeros(HashUtil.generateBlockHash(headerBytes, nonce));
         this.valid = true;
     }
     
@@ -108,7 +108,7 @@ public class Block
         bytes.putInt(time);
         bytes.putInt(target);
         bytes.putInt(ballots.size());
-        myBytes = bytes.array();
+        headerBytes = bytes.array();
     }
     
     @Override
@@ -121,7 +121,7 @@ public class Block
         }
         return "---- BLOCK V" + version + " @ "
                 + DateFormat.getDateTimeInstance().format(new Date(((long) (time)) * 60000)) + " "
-                + (valid && HashUtil.validateProof(myBytes, nonce, target) ? "[VALID]" : "[INVALID]") + "\n"
+                + (valid && HashUtil.validateProof(headerBytes, nonce, target) ? "[VALID]" : "[INVALID]") + "\n"
                 + "Hash:       " + myHash + "\n"
                 + "PrevHash:   " + prevBlockHash + "\n"
                 + "MerkleRoot: " + merkleRootHash + "\n"
