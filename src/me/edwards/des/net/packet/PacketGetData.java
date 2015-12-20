@@ -1,6 +1,5 @@
 package me.edwards.des.net.packet;
 
-import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
@@ -74,8 +73,7 @@ public class PacketGetData extends Packet
      */
     public String getHash(int index)
     {
-        BigInteger i = new BigInteger(1, vectors.get(index).hash);
-        return HashUtil.generateLeadingZeros(i.toString(16));
+        return ByteUtil.bytesToHex(vectors.get(index).hash);
     }
     
     /**

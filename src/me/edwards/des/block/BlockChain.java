@@ -59,6 +59,16 @@ public class BlockChain
         //
     }
     
+    public boolean contains(String hash)
+    {
+        return false;
+    }
+    
+    public Block get(String hash)
+    {
+        return null;
+    }
+    
     private class Node
     {
         private Node parent;

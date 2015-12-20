@@ -1,11 +1,11 @@
 package me.edwards.des.net.packet;
 
-import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
 import me.edwards.des.block.Ballot;
 import me.edwards.des.block.Block;
+import me.edwards.des.util.ByteUtil;
 
 /**
  * Inventory Packet<br>
@@ -83,8 +83,7 @@ public class PacketInv extends Packet
      */
     public String getHash(int index)
     {
-        BigInteger i = new BigInteger(1, vectors.get(index).hash);
-        return i.toString(16);
+        return ByteUtil.bytesToHex(vectors.get(index).hash);
     }
     
     /**
@@ -98,14 +97,12 @@ public class PacketInv extends Packet
         if (invObject instanceof Ballot)
         {
             vector.type = VECTOR_BALLOT;
-            BigInteger i = new BigInteger(((Ballot) invObject).getRoot().replaceFirst("0{0,31}", ""), 16);
-            vector.hash = i.toByteArray();
+            vector.hash = ByteUtil.hexToBytes(((Ballot) invObject).getRoot());
         }
         else if (invObject instanceof Block)
         {
             vector.type = VECTOR_BLOCK;
-            BigInteger i = new BigInteger(((Block) invObject).getHash().replaceFirst("0{0,31}", ""), 16);
-            vector.hash = i.toByteArray();
+            vector.hash = ByteUtil.hexToBytes(((Block) invObject).getHash());
         }
         else
         {

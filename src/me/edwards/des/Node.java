@@ -29,6 +29,7 @@ import me.edwards.des.net.Connection;
 import me.edwards.des.net.packet.Packet;
 import me.edwards.des.net.packet.PacketAddr;
 import me.edwards.des.net.packet.PacketBallot;
+import me.edwards.des.net.packet.PacketBlock;
 import me.edwards.des.net.packet.PacketGetAddr;
 import me.edwards.des.net.packet.PacketGetData;
 import me.edwards.des.net.packet.PacketInv;
@@ -310,6 +311,19 @@ public class Node
                             getData.addInv(packet.getType(i), packet.getHash(i));
                         }
                     }
+                    else if (packet.getType(i) == PacketInv.VECTOR_BLOCK)
+                    {
+                        if (dataRequests.contains(packet.getHash(i)))
+                        {
+                            continue;
+                        }
+                        if (!blockChain.contains(packet.getHash(i)))
+                        {
+                            logger.finer("New resource " + packet.getHash(i) + "(" + packet.getType(i) + ")! Requesting data...");
+                            dataRequests.add(packet.getHash(i));
+                            getData.addInv(packet.getType(i), packet.getHash(i));
+                        }
+                    }
                 }
                 if (getData.getSize() > 0)
                 {
@@ -347,6 +361,19 @@ public class Node
                             connection.send(new PacketNotFound(packet.getType(i), packet.getHash(i)));
                         }
                     }
+                    else if (packet.getType(i) == PacketInv.VECTOR_BLOCK)
+                    {
+                        if (blockChain.contains(packet.getHash(i)))
+                        {
+                            logger.finer("Request for resource " + packet.getHash(i) + "(" + packet.getType(i) + ")! Sending data...");
+                            connection.send(new PacketBlock(blockChain.get(packet.getHash(i))));
+                        }
+                        else
+                        {
+                            logger.finer("Request for resource " + packet.getHash(i) + "(" + packet.getType(i) + ")! Could not be found! Sending reply...");
+                            connection.send(new PacketNotFound(packet.getType(i), packet.getHash(i)));
+                        }
+                    }
                 }
                 return;
             }
@@ -378,6 +405,33 @@ public class Node
                         sendToAll(inv);
                     }
                 }, "Ballot Validation " + packet.getBallot().getRoot()).start();
+                return;
+            }
+            case BLOCK:
+            {
+                PacketBlock packet = new PacketBlock(data);
+                logger.info("Received block " + packet.getBlock().getHash() + "!");
+                final Block b = packet.getBlock();
+                new Thread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        //TODO
+                        if (!dataRequests.remove(b.getHash()))
+                        {
+                            return;
+                        }
+                        if (blockChain.contains(b.getHash()))
+                        {
+                            return;
+                        }
+                        blockChain.queue(b);
+                        PacketInv inv = new PacketInv();
+                        inv.addInv(b);
+                        sendToAll(inv);
+                    }
+                }, "Block Validation " + packet.getBlock().getHash()).start();
                 return;
             }
             default: logger.finest("Could not parse invalid packet.");
