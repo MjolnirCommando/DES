@@ -31,6 +31,7 @@ public class Block
     private ArrayList<Ballot> ballots;
     
     private byte[] headerBytes;
+    private byte[] myBytes;
     private String myHash;
     private boolean valid;
     
@@ -49,11 +50,38 @@ public class Block
         this.ballots = ballots;
         this.myHash = "NOT GENERATED";
         this.valid = false;
+        this.myBytes = null;
     }
     
+    /**
+     * Creates new Block from binary data
+     * @param binary Binary data
+     */
     public Block(byte[] binary)
     {
-        //
+        ByteBuffer data = ByteBuffer.wrap(binary);
+        this.version = data.getInt();
+        byte[] prevBlockHashBytes = new byte[32];
+        data.get(prevBlockHashBytes, 0, prevBlockHashBytes.length);
+        this.prevBlockHash = ByteUtil.bytesToHex(prevBlockHashBytes);
+        byte[] merkleRootHashBytes = new byte[32];
+        data.get(merkleRootHashBytes, 0, merkleRootHashBytes.length);
+        this.merkleRootHash = ByteUtil.bytesToHex(merkleRootHashBytes);
+        this.time = data.getInt();
+        this.target = data.getInt();
+        this.ballots = new ArrayList<Ballot>();
+        int ballotNum = data.getInt();
+        this.nonce = data.getInt();
+        for (int i = 0; ballotNum > i; i++)
+        {
+            int size = data.getInt();
+            byte[] bytes = new byte[size];
+            data.get(bytes, 0, size);
+            ballots.add(new Ballot(bytes));
+        }
+        genBytes();
+        this.myHash = HashUtil.generateLeadingZeros(HashUtil.generateBlockHash(headerBytes, nonce));
+        validate();
     }
     
     /**
@@ -125,9 +153,36 @@ public class Block
         headerBytes = bytes.array();
     }
     
+    /**
+     * Returns the byte data of this Block
+     * @return
+     */
     public byte[] getBytes()
     {
-        return new byte[2];
+        if (myBytes == null)
+        {
+            int size = 0;
+            for (int i = 0; ballots.size() > i; i++)
+            {
+                size += 4 + ballots.get(i).getBytes().length;
+            }
+            ByteBuffer data = ByteBuffer.allocate(4 + 32 + 32 + 4 + 4 + 4 + 4 + size);
+            data.putInt(version);
+            data.put(ByteUtil.hexToBytes(HashUtil.generateLeadingZeros(prevBlockHash)));
+            data.put(ByteUtil.hexToBytes(HashUtil.generateLeadingZeros(merkleRootHash)));
+            data.putInt(time);
+            data.putInt(target);
+            data.putInt(ballots.size());
+            data.putInt(nonce);
+            for (int i = 0; ballots.size() > i; i++)
+            {
+                byte[] bytes = ballots.get(i).getBytes();
+                data.putInt(bytes.length);
+                data.put(bytes);
+            }
+            myBytes = data.array();
+        }
+        return myBytes;
     }
     
     /**
