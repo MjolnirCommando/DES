@@ -103,8 +103,8 @@ public class Block
     {
         ByteBuffer bytes = ByteBuffer.allocate(4 + 32 + 32 + 4 + 4 + 4);
         bytes.putInt(version);
-        bytes.put(new BigInteger(prevBlockHash.replaceFirst("0{0,31}", ""), 16).toByteArray());
-        bytes.put(new BigInteger(merkleRootHash.replaceFirst("0{0,31}", ""), 16).toByteArray());
+        bytes.put(ByteUtil.hexToBytes(HashUtil.generateLeadingZeros(prevBlockHash)));
+        bytes.put(ByteUtil.hexToBytes(HashUtil.generateLeadingZeros(merkleRootHash)));
         bytes.putInt(time);
         bytes.putInt(target);
         bytes.putInt(ballots.size());
@@ -114,11 +114,7 @@ public class Block
     @Override
     public String toString()
     {
-        String tar = new BigInteger(1, ByteUtil.intToBytes(target)).toString(16);
-        while (tar.length() < 8)
-        {
-            tar = "0" + tar;
-        }
+        String tar = HashUtil.generateLeadingZeros(ByteUtil.bytesToHex(ByteUtil.intToBytes(target)), 8);
         return "---- BLOCK V" + version + " @ "
                 + DateFormat.getDateTimeInstance().format(new Date(((long) (time)) * 60000)) + " "
                 + (valid && HashUtil.validateProof(headerBytes, nonce, target) ? "[VALID]" : "[INVALID]") + "\n"
@@ -126,7 +122,7 @@ public class Block
                 + "PrevHash:   " + prevBlockHash + "\n"
                 + "MerkleRoot: " + merkleRootHash + "\n"
                 + "Target:     " + tar + "   Difficulty: " + getDifficulty(target) + "\n"
-                + "Vote Size:  " + ballots.size() + "\n"
+                + "Ballots:    " + ballots.size() + "\n"
                 + "Nonce:      " + nonce + "\n"
                 + "-------------------------------------------";
     }

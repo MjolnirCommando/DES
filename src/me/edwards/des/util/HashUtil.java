@@ -20,18 +20,29 @@ public class HashUtil
     private static int hashes = 0;
     
     /**
-     * Generates a hash string with the correct number of leading zeros
+     * Generates a hash string with the correct number of leading zeros (64 digits by default)
      * @param hash String to add leading zeros to
      * @return
      */
     public static String generateLeadingZeros(String hash)
+    {
+        return generateLeadingZeros(hash, 64);
+    }
+    
+    /**
+     * Generates a hash string with the correct number of leading zeros
+     * @param hash String to add leading zeros to
+     * @param digits Number of digits to match
+     * @return
+     */
+    public static String generateLeadingZeros(String hash, int digits)
     {
         StringBuffer output = new StringBuffer();
         if (hash != null)
         {
             output.append(hash);
         }
-        while (output.length() < 64)
+        while (output.length() < digits)
         {
             output.insert(0, "0");
         }
@@ -55,7 +66,7 @@ public class HashUtil
             byte[] digest = md.digest();
             md.reset();
             md.update(digest);
-            return new BigInteger(1, md.digest()).toString(16);
+            return ByteUtil.bytesToHex(md.digest());
         }
         catch (NoSuchAlgorithmException e)
         {
@@ -79,7 +90,7 @@ public class HashUtil
             byte[] digest = md.digest();
             md.reset();
             md.update(digest);
-            return generateLeadingZeros(new BigInteger(1, md.digest()).toString(16));
+            return generateLeadingZeros(ByteUtil.bytesToHex(md.digest()));
         }
         catch (NoSuchAlgorithmException e)
         {
@@ -174,7 +185,7 @@ public class HashUtil
             md.reset();
             md.update(root1.getBytes());
             md.update(root2.getBytes());
-            return generateLeadingZeros(new BigInteger(1, md.digest()).toString(16));
+            return generateLeadingZeros(ByteUtil.bytesToHex(md.digest()));
         }
         catch (NoSuchAlgorithmException e)
         {

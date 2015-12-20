@@ -1,5 +1,7 @@
 package me.edwards.des.util;
 
+import javax.xml.bind.DatatypeConverter;
+
 /**
  * Utility class for converting Java data structures and primitives into byte arrays
  * Created on: Oct 17, 2015 at 9:21:05 AM
@@ -53,5 +55,25 @@ public class ByteUtil
             l >>= 8;
         }
         return result;
+    }
+
+    /**
+     * Transforms a hexadecimal string into a byte array
+     * @param hex Hex String
+     * @return
+     */
+    public static byte[] hexToBytes(String hex)
+    {
+        return DatatypeConverter.parseHexBinary(hex);
+    }
+    
+    /**
+     * Transforms a byte array into a hexadecimal string
+     * @param bytes Byte Array
+     * @return
+     */
+    public static String bytesToHex(byte[] bytes)
+    {
+        return DatatypeConverter.printHexBinary(bytes);
     }
 }

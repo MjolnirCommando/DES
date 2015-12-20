@@ -12,6 +12,8 @@ import me.edwards.des.block.Ballot;
  */
 public class PacketBallot extends Packet
 {
+    private Ballot ballot;
+    
     /**
      * Creates new PacketBallot
      * @param ballot
@@ -19,6 +21,7 @@ public class PacketBallot extends Packet
     public PacketBallot(Ballot ballot)
     {
         super(PacketTypes.BALLOT.getID());
+        this.ballot = ballot;
     }
     
     /**
@@ -29,16 +32,31 @@ public class PacketBallot extends Packet
     {
         super(PacketTypes.BALLOT.getID());
         ByteBuffer data = ByteBuffer.wrap(binary);
-        data.position(5);
+        data.position(1);
+        int size = data.getInt();
+        byte[] bytes = new byte[size - 5];
+        data.get(bytes, 0, size - 5);
+        this.ballot = new Ballot(bytes);
+    }
+    
+    /**
+     * Returns the ballot transferred by this packet
+     * @return
+     */
+    public Ballot getBallot()
+    {
+        return ballot;
     }
 
     @Override
     public byte[] getBinary()
     {
-        int size = 1 + 4;
+        byte[] bytes = ballot.getBytes();
+        int size = 1 + 4 + bytes.length;
         ByteBuffer data = ByteBuffer.allocate(size);
         data.put(getID());
         data.putInt(size);
+        data.put(bytes);
         return data.array();
     }
 }

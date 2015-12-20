@@ -3,7 +3,6 @@ package me.edwards.des;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -24,6 +23,7 @@ import java.util.logging.Logger;
 
 import me.edwards.des.block.Ballot;
 import me.edwards.des.block.Block;
+import me.edwards.des.block.Vote;
 import me.edwards.des.net.Connection;
 import me.edwards.des.net.packet.Packet;
 import me.edwards.des.net.packet.PacketAddr;
@@ -336,6 +336,12 @@ public class Node
                 }
                 return;
             }
+            case BALLOT:
+            {
+                PacketBallot packet = new PacketBallot(data);
+                
+                return;
+            }
             default: logger.finest("Could not parse invalid packet.");
         }
     }
@@ -506,6 +512,23 @@ public class Node
                     {
                         // ignore
                     }
+                    else if (input[0].equalsIgnoreCase("test"))
+                    {
+                        //TODO
+                        node.logger.info("Testing ballot...");
+                        ArrayList<Vote> votes = new ArrayList<Vote>();
+                        votes.add(new Vote(0, "John Doe"));
+                        votes.add(new Vote(1, "Satoshi"));
+                        Ballot b = new Ballot("FFFFFFFFFFFFFFFF", "<Signature>", votes);
+                        node.logger.info("\n" + b.toString());
+                        node.logger.info(b.getRoot());
+                        PacketBallot p = new PacketBallot(b);
+                        PacketBallot pR = new PacketBallot(p.getBinary());
+                        Ballot bR = pR.getBallot();
+                        node.logger.info("\n" + bR.toString());
+                        node.logger.info(bR.getRoot());
+                        node.logger.info("VALID?: " + b.getRoot().equals(bR.getRoot()));
+                    }
                     else if (input[0].equalsIgnoreCase("stop"))
                     {
                         node.stop();
@@ -548,7 +571,16 @@ public class Node
                     }
                     else if (input[0].equalsIgnoreCase("gen"))
                     {
-                        if (input[1].equalsIgnoreCase("block"))
+                        if (input[1].equalsIgnoreCase("ballot"))
+                        {
+                            node.logger.info("Generating ballot...");
+                            ArrayList<Vote> votes = new ArrayList<Vote>();
+                            votes.add(new Vote(0, "John Doe"));
+                            votes.add(new Vote(1, "Satoshi"));
+                            Ballot b = new Ballot("FFFFFFFFFFFFFFFF", "<Signature>", votes);
+                            node.logger.info("\n" + b.toString());
+                        }
+                        else if (input[1].equalsIgnoreCase("block"))
                         {
                             node.logger.info("Generating block...");
                             ArrayList<Ballot> temp = new ArrayList<Ballot>();
@@ -557,7 +589,7 @@ public class Node
                                 temp.add(node.ballots.get(i));
                             }
                             long time = System.currentTimeMillis();
-                            Block b = new Block(input[2], ByteUtil.bytesToInt(new BigInteger(input[3], 16).toByteArray()), temp);
+                            Block b = new Block(input[2], ByteUtil.bytesToInt(ByteUtil.hexToBytes(HashUtil.generateLeadingZeros(input[3], 8))), temp);
                             b.validate();
                             node.logger.info("Generated Block in " + ((System.currentTimeMillis() - time) / 1000) + " seconds!\n" + b.toString());
                         }
@@ -591,7 +623,7 @@ public class Node
                             dsa.initVerify(pub);
                             dsa.update(root.getBytes());
                             System.out.println("Root:      " + root);
-                            System.out.println("Signature: " + HashUtil.generateLeadingZeros(new BigInteger(1, realSig).toString(16)));
+                            System.out.println("Signature: " + HashUtil.generateLeadingZeros(ByteUtil.bytesToHex(realSig)));
                             System.out.println("Pub Key X: " + HashUtil.generateLeadingZeros(pub.getW().getAffineX().toString(16)));
                             System.out.println("Pub Key Y: " + HashUtil.generateLeadingZeros(pub.getW().getAffineY().toString(16)));
                             System.out.println("Verified:  " + dsa.verify(realSig));
