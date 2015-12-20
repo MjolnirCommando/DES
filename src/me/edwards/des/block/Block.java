@@ -51,6 +51,11 @@ public class Block
         this.valid = false;
     }
     
+    public Block(byte[] binary)
+    {
+        //
+    }
+    
     /**
      * Returns the hash for this block
      * @return
@@ -109,6 +114,11 @@ public class Block
         bytes.putInt(target);
         bytes.putInt(ballots.size());
         headerBytes = bytes.array();
+    }
+    
+    public byte[] getBytes()
+    {
+        return null;
     }
     
     @Override

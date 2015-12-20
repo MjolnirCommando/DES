@@ -190,7 +190,12 @@ public abstract class Packet
         /**
          * Ballot Packet Type, used to transfer ballot information between nodes
          */
-        BALLOT();
+        BALLOT(),
+        
+        /**
+         * Block Packet Type, used to transfer block information between nodes
+         */
+        BLOCK();
         
         private byte id;
         

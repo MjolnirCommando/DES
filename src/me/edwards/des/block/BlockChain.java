@@ -23,10 +23,10 @@ public class BlockChain
     }
     
     /**
-     * Adds a block to the end of this BlockChain
+     * Adds a block to the top of this BlockChain
      * @param block
      */
-    public void addBlock(Block block)
+    private void append(Block block)
     {
         Node second = top;
         top = new Node();
@@ -52,6 +52,11 @@ public class BlockChain
     public int getSize()
     {
         return size;
+    }
+    
+    public void queue(Block block)
+    {
+        //
     }
     
     private class Node

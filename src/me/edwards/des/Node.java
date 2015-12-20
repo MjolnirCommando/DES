@@ -23,6 +23,7 @@ import java.util.logging.Logger;
 
 import me.edwards.des.block.Ballot;
 import me.edwards.des.block.Block;
+import me.edwards.des.block.BlockChain;
 import me.edwards.des.block.Vote;
 import me.edwards.des.net.Connection;
 import me.edwards.des.net.packet.Packet;
@@ -54,7 +55,7 @@ public class Node
     public static final Version VERSION = new Version("1.0.0 DES_ALPHA");
     
     /**
-     * Default MJGL Protocol Buffer Size
+     * Default Packet Buffer Size
      */
     public static final int BUFFER_SIZE = 4096;
     
@@ -62,6 +63,8 @@ public class Node
     
     private Logger logger;
 
+    private BlockChain blockChain;
+    
     private ArrayList<Connection> peers;
     private ArrayList<Ballot> ballots;
     private ArrayList<String> dataRequests;
@@ -483,14 +486,29 @@ public class Node
         {
             return;
         }
-        
         blockGen = new Thread(new Runnable()
         {
             @Override
             public void run()
             {
-                // TODO Auto-generated method stub
-                
+                logger.info("Generating Block...");
+                ArrayList<Ballot> tempBallot = new ArrayList<Ballot>();
+                int size = ballots.size();
+                for (int i = 0; size > i; i++)
+                {
+                    tempBallot.add(ballots.get(0));
+                    ballots.remove(0);
+                }
+                long time = System.currentTimeMillis();
+                Block b = new Block(blockChain.getTop().getHash(), Block.MAXIMUM_TARGET, tempBallot);
+                b.validate();
+                logger.info("Generated Block in " + ((System.currentTimeMillis() - time) / 1000) + " seconds!\n" + b.toString());
+                logger.info("Adding block to BlockChain...");
+                blockChain.queue(b);
+                PacketInv inv = new PacketInv();
+                inv.addInv(b);
+                logger.info("Notifying peers of block...");
+                sendToAll(inv);
             }
         }, "Block Generation");
         blockGen.start();
@@ -552,6 +570,9 @@ public class Node
         {
             node.logger.log(Level.WARNING, "Could not load Default Peer List!", e);
         }
+        
+        node.logger.info("Loading BlockChain...");
+        node.blockChain = new BlockChain(null);
         
         node.start();
         
@@ -628,38 +649,9 @@ public class Node
                     }
                     else if (input[0].equalsIgnoreCase("gen"))
                     {
-                        if (input[1].equalsIgnoreCase("ballot"))
+                        if (input[1].equalsIgnoreCase("block"))
                         {
-                            node.logger.info("Generating ballot...");
-                            ArrayList<Vote> votes = new ArrayList<Vote>();
-                            votes.add(new Vote(0, "John Doe"));
-                            votes.add(new Vote(1, "Satoshi"));
-                            Ballot b = new Ballot("FFFFFFFFFFFFFFFF", "<Signature>", votes);
-                            node.logger.info("\n" + b.toString());
-                        }
-                        else if (input[1].equalsIgnoreCase("block"))
-                        {
-                            node.logger.info("Generating block...");
-                            ArrayList<Ballot> temp = new ArrayList<Ballot>();
-                            for (int i = 0; node.ballots.size() > i; i++)
-                            {
-                                temp.add(node.ballots.get(i));
-                            }
-                            long time = System.currentTimeMillis();
-                            Block b = new Block(input[2], ByteUtil.bytesToInt(ByteUtil.hexToBytes(HashUtil.generateLeadingZeros(input[3], 8))), temp);
-                            b.validate();
-                            node.logger.info("Generated Block in " + ((System.currentTimeMillis() - time) / 1000) + " seconds!\n" + b.toString());
-                        }
-                        else if (input[1].equalsIgnoreCase("myaddr"))
-                        {
-                            node.logger.info(node.ip + ":" + node.port + " [" + node.name + "]");
-                        }
-                        else if (input[1].equalsIgnoreCase("addr"))
-                        {
-                            for (Connection c : node.peers)
-                            {
-                                node.logger.info(c.toString());
-                            }
+                            node.generateBlock();
                         }
                         else if (input[1].equalsIgnoreCase("key"))
                         {
@@ -684,6 +676,17 @@ public class Node
                             System.out.println("Pub Key X: " + HashUtil.generateLeadingZeros(pub.getW().getAffineX().toString(16)));
                             System.out.println("Pub Key Y: " + HashUtil.generateLeadingZeros(pub.getW().getAffineY().toString(16)));
                             System.out.println("Verified:  " + dsa.verify(realSig));
+                        }
+                    }
+                    else if (input[1].equalsIgnoreCase("myaddr"))
+                    {
+                        node.logger.info(node.ip + ":" + node.port + " [" + node.name + "]");
+                    }
+                    else if (input[1].equalsIgnoreCase("addr"))
+                    {
+                        for (Connection c : node.peers)
+                        {
+                            node.logger.info(c.toString());
                         }
                     }
                     else
