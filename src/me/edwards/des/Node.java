@@ -64,6 +64,7 @@ public class Node
 
     private ArrayList<Connection> peers;
     private ArrayList<Ballot> ballots;
+    private ArrayList<String> dataRequests;
     
     private InetAddress ip;
     private ServerSocket socket;
@@ -71,6 +72,7 @@ public class Node
     private String name;
     private boolean running;
     private Thread handshake;
+    private Thread blockGen = null;
     
     /**
      * Starts the Node
@@ -79,6 +81,7 @@ public class Node
     {
         peers = new ArrayList<Connection>();
         ballots = new ArrayList<Ballot>();
+        dataRequests = new ArrayList<String>();
         
         try
         {
@@ -284,6 +287,10 @@ public class Node
                 {
                     if (packet.getType(i) == PacketInv.VECTOR_BALLOT)
                     {
+                        if (dataRequests.contains(packet.getHash(i)))
+                        {
+                            continue;
+                        }
                         boolean b = true;
                         for (int v = 0; ballots.size() > v; v++)
                         {
@@ -295,6 +302,8 @@ public class Node
                         }
                         if (b)
                         {
+                            logger.finer("New resource " + packet.getHash(i) + "(" + packet.getType(i) + ")! Requesting data...");
+                            dataRequests.add(packet.getHash(i));
                             getData.addInv(packet.getType(i), packet.getHash(i));
                         }
                     }
@@ -308,7 +317,7 @@ public class Node
             case NOTFOUND:
             {
                 PacketNotFound packet = new PacketNotFound(data);
-                logger.finer("Received that resource " + packet.getHash() + "(" + packet.getType() + ") could not be found.");
+                logger.finer("Received notice that resource " + packet.getHash() + "(" + packet.getType() + ") could not be found.");
                 return;
             }
             case GETDATA:
@@ -321,15 +330,17 @@ public class Node
                         boolean b = false;
                         for (int v = 0; ballots.size() > v; v++)
                         {
-                            if (ballots.get(v).getRoot().equals(packet.getHash(i)))
+                            if (ballots.get(v).getRoot().equalsIgnoreCase(packet.getHash(i)))
                             {
                                 b = true;
+                                logger.finer("Request for resource " + packet.getHash(i) + "(" + packet.getType(i) + ")! Sending data...");
                                 connection.send(new PacketBallot(ballots.get(v)));
                                 break;
                             }
                         }
                         if (!b)
                         {
+                            logger.finer("Request for resource " + packet.getHash(i) + "(" + packet.getType(i) + ")! Could not be found! Sending reply...");
                             connection.send(new PacketNotFound(packet.getType(i), packet.getHash(i)));
                         }
                     }
@@ -339,7 +350,31 @@ public class Node
             case BALLOT:
             {
                 PacketBallot packet = new PacketBallot(data);
-                
+                logger.info("Received ballot " + packet.getBallot().getRoot() + "!");
+                final Ballot b = packet.getBallot();
+                new Thread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        //TODO
+                        if (!dataRequests.remove(b.getRoot()))
+                        {
+                            return;
+                        }
+                        for (int i = 0; ballots.size() > i; i++)
+                        {
+                            if (ballots.get(i).getRoot().equalsIgnoreCase(b.getRoot()))
+                            {
+                                return;
+                            }
+                        }
+                        ballots.add(b);
+                        PacketInv inv = new PacketInv();
+                        inv.addInv(b);
+                        sendToAll(inv);
+                    }
+                }, "Ballot Validation " + packet.getBallot().getRoot()).start();
                 return;
             }
             default: logger.finest("Could not parse invalid packet.");
@@ -439,6 +474,28 @@ public class Node
         return peers;
     }
     
+    /**
+     * Attempts to generate a block from the known ballots
+     */
+    public void generateBlock()
+    {
+        if (blockGen != null)
+        {
+            return;
+        }
+        
+        blockGen = new Thread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                // TODO Auto-generated method stub
+                
+            }
+        }, "Block Generation");
+        blockGen.start();
+    }
+    
     private static boolean validateVersion(Version v)
     {
         return VERSION.isEqualTo(v);
@@ -512,23 +569,6 @@ public class Node
                     {
                         // ignore
                     }
-                    else if (input[0].equalsIgnoreCase("test"))
-                    {
-                        //TODO
-                        node.logger.info("Testing ballot...");
-                        ArrayList<Vote> votes = new ArrayList<Vote>();
-                        votes.add(new Vote(0, "John Doe"));
-                        votes.add(new Vote(1, "Satoshi"));
-                        Ballot b = new Ballot("FFFFFFFFFFFFFFFF", "<Signature>", votes);
-                        node.logger.info("\n" + b.toString());
-                        node.logger.info(b.getRoot());
-                        PacketBallot p = new PacketBallot(b);
-                        PacketBallot pR = new PacketBallot(p.getBinary());
-                        Ballot bR = pR.getBallot();
-                        node.logger.info("\n" + bR.toString());
-                        node.logger.info(bR.getRoot());
-                        node.logger.info("VALID?: " + b.getRoot().equals(bR.getRoot()));
-                    }
                     else if (input[0].equalsIgnoreCase("stop"))
                     {
                         node.stop();
@@ -567,6 +607,23 @@ public class Node
                         {
                             c.send(new PacketGetAddr());
                             node.logger.info("Sent GETADDR to " + c);
+                        }
+                    }
+                    else if (input[0].equalsIgnoreCase("send"))
+                    {
+                        if (input[1].equalsIgnoreCase("ballot"))
+                        {
+                            node.logger.info("Generating ballot...");
+                            ArrayList<Vote> votes = new ArrayList<Vote>();
+                            votes.add(new Vote(0, "John Doe"));
+                            votes.add(new Vote(1, "Satoshi"));
+                            Ballot b = new Ballot("FFFFFFFFFFFFFFFF", "<Signature>", votes);
+                            node.logger.info("\n" + b.toString());
+                            node.ballots.add(b);
+                            node.logger.info("Sending ballot...");
+                            PacketInv inv = new PacketInv();
+                            inv.addInv(b);
+                            node.sendToAll(inv);
                         }
                     }
                     else if (input[0].equalsIgnoreCase("gen"))

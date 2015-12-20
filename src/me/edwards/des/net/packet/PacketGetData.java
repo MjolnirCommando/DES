@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
 import me.edwards.des.net.packet.PacketInv.InvVector;
+import me.edwards.des.util.ByteUtil;
 import me.edwards.des.util.HashUtil;
 
 /**
@@ -86,8 +87,7 @@ public class PacketGetData extends Packet
     {
         InvVector vector = new InvVector();
         vector.type = type;
-        BigInteger i = new BigInteger(hash.replaceFirst("0{0,31}", ""), 16);
-        vector.hash = i.toByteArray();
+        vector.hash = ByteUtil.hexToBytes(HashUtil.generateLeadingZeros(hash));
         vectors.add(vector);
     }
 
