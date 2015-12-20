@@ -65,6 +65,7 @@ public class Node
     private Logger logger;
 
     private BlockChain blockChain;
+    private String blockGenHash;
     
     private ArrayList<Connection> peers;
     private ArrayList<Ballot> ballots;
@@ -411,6 +412,7 @@ public class Node
             {
                 PacketBlock packet = new PacketBlock(data);
                 logger.info("Received block " + packet.getBlock().getHash() + "!");
+                logger.info("\n" + packet.getBlock());
                 final Block b = packet.getBlock();
                 new Thread(new Runnable()
                 {
@@ -554,8 +556,9 @@ public class Node
                     ballots.remove(0);
                 }
                 long time = System.currentTimeMillis();
-                Block b = new Block(blockChain.getTop().getHash(), Block.MAXIMUM_TARGET, tempBallot);
-                b.validate();
+                blockGenHash = blockChain.getTop().getHash();
+                Block b = new Block(blockGenHash, Block.MAXIMUM_TARGET, tempBallot);
+                b.genProof();
                 logger.info("Generated Block in " + ((System.currentTimeMillis() - time) / 1000) + " seconds!\n" + b.toString());
                 logger.info("Adding block to BlockChain...");
                 blockChain.queue(b);
@@ -563,6 +566,7 @@ public class Node
                 inv.addInv(b);
                 logger.info("Notifying peers of block...");
                 sendToAll(inv);
+                blockGen = null;
             }
         }, "Block Generation");
         blockGen.start();
@@ -626,7 +630,9 @@ public class Node
         }
         
         node.logger.info("Loading BlockChain...");
-        node.blockChain = new BlockChain(null);
+        Block block = new Block("0", Block.MAXIMUM_TARGET, new ArrayList<Ballot>());
+        block.genProof();
+        node.blockChain = new BlockChain(block);
         
         node.start();
         
@@ -706,6 +712,19 @@ public class Node
                         if (input[1].equalsIgnoreCase("block"))
                         {
                             node.generateBlock();
+                        }
+                        else if (input[1].equalsIgnoreCase("ballot"))
+                        {
+                            int ballotNum = Integer.parseInt(input[2]);
+                            ArrayList<Vote> votes = new ArrayList<Vote>();
+                            votes.add(new Vote(0, "John Doe"));
+                            votes.add(new Vote(1, "Satoshi"));
+                            for (int i = 0; ballotNum > i; i++)
+                            {
+                                Ballot b = new Ballot(ByteUtil.bytesToHex(ByteUtil.intToBytes(i)), "<Signature>", votes);
+                                node.ballots.add(b);
+                            }
+                            node.logger.info("Generated Ballots!");
                         }
                         else if (input[1].equalsIgnoreCase("key"))
                         {

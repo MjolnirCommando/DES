@@ -19,7 +19,7 @@ public class Block
     /**
      * Maximum Target value for DES
      */
-    public static final int MAXIMUM_TARGET = ByteUtil.bytesToInt(new byte[] {(byte) 0x1d, (byte) 0xF0, (byte) 0x00, (byte) 0x00});
+    public static final int MAXIMUM_TARGET = ByteUtil.bytesToInt(new byte[] {(byte) 0x1f, (byte) 0xFf, (byte) 0xff, (byte) 0xff});//ByteUtil.bytesToInt(new byte[] {(byte) 0x1d, (byte) 0xF0, (byte) 0x00, (byte) 0x00});
     
     private final int VERSION = 1;
     private int version;
@@ -66,9 +66,18 @@ public class Block
     }
     
     /**
+     * Returns the hash for this block's parent
+     * @return
+     */
+    public String getPrevHash()
+    {
+        return prevBlockHash;
+    }
+    
+    /**
      * Generates a proof for this block and validates its information.
      */
-    public void validate()
+    public void genProof()
     {
         if (valid)
         {
@@ -118,7 +127,17 @@ public class Block
     
     public byte[] getBytes()
     {
-        return null;
+        return new byte[2];
+    }
+    
+    /**
+     * Returns true if this Block is valid
+     * @return
+     */
+    public boolean validate()
+    {
+        valid = HashUtil.validateProof(headerBytes, nonce, target);
+        return valid;
     }
     
     @Override
@@ -127,7 +146,7 @@ public class Block
         String tar = HashUtil.generateLeadingZeros(ByteUtil.bytesToHex(ByteUtil.intToBytes(target)), 8);
         return "---- BLOCK V" + version + " @ "
                 + DateFormat.getDateTimeInstance().format(new Date(((long) (time)) * 60000)) + " "
-                + (valid && HashUtil.validateProof(headerBytes, nonce, target) ? "[VALID]" : "[INVALID]") + "\n"
+                + (validate() ? "[VALID]" : "[INVALID]") + "\n"
                 + "Hash:       " + myHash + "\n"
                 + "PrevHash:   " + prevBlockHash + "\n"
                 + "MerkleRoot: " + merkleRootHash + "\n"
