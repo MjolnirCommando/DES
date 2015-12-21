@@ -33,7 +33,7 @@ public class Connection
     
     private static final Logger logger = Logger.getLogger("DES.node");
     private static final int CONNECT_TIMEOUT = 3000;
-    private static final int PING_TIMEOUT = 5000;
+    private static final int PING_TIMEOUT = 60000;
     
     private Node node;
     private Socket socket;

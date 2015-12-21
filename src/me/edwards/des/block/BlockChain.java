@@ -70,6 +70,7 @@ public class BlockChain
         }
         else
         {
+            //TODO
             queue.add(block);
         }
     }
