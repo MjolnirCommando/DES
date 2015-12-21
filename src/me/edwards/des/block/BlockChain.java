@@ -1,5 +1,6 @@
 package me.edwards.des.block;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
 /**
@@ -24,6 +25,79 @@ public class BlockChain
         this.top.block = genesis;
         this.size = 1;
         queue = new ArrayList<Block>();
+    }
+    
+    /**
+     * Creates new BlockChain from binary data
+     * @param size 
+     * @param binary
+     */
+    public BlockChain(int size, byte[][] binary)
+    {
+        this.queue = new ArrayList<Block>();
+        Node n = null;
+        int height = size - 1;
+        for (int i = 0; binary.length > i; i++)
+        {
+            ByteBuffer data = ByteBuffer.wrap(binary[i]);
+            for (int j = 0; size > j; j++)
+            {
+                if (data.position() == data.limit())
+                {
+                    break;
+                }
+                int length = data.getInt();
+                byte[] blockData = new byte[length];
+                data.get(blockData, 0, length);
+                Node child = new Node();
+                child.height = height--;
+                child.block = new Block(blockData);
+                child.parent = n;
+                if (i == 0 && j == 0)
+                {
+                    this.top = child;
+                }
+                n = child;
+            }
+        }
+    }
+    
+    /**
+     * Returns this BlockChain in binary format
+     * @return
+     */
+    public byte[][] getBytes()
+    {
+        int MAX_SIZE = 1024 * 1024 * 5;
+        long length = 0;
+        Node n = top;
+        for (long i = 0; size > i; i++)
+        {
+            length += 4 + n.block.getBytes().length;
+            n = top.parent;
+        }
+        byte[][] bytes = new byte[(int) Math.ceil((double) length / MAX_SIZE)][];
+        n = top;
+        for (int i = 0; bytes.length > i; i++)
+        {
+            ByteBuffer data = ByteBuffer.allocate((int) Math.min(length, MAX_SIZE));
+            for (int j = 0; size > j; j++)
+            {
+                if (n.block.getBytes().length + data.position() > data.limit())
+                {
+                    break;
+                }
+                data.putInt(n.block.getBytes().length);
+                data.put(n.block.getBytes());
+                length -= n.block.getBytes().length;
+                n = top.parent;
+            }
+            int pos = data.position();
+            bytes[i] = new byte[pos];
+            data.position(0);
+            data.get(bytes[i], 0, pos);
+        }
+        return bytes;
     }
     
     /**

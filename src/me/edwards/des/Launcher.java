@@ -22,6 +22,7 @@ import java.util.logging.Logger;
 import me.edwards.des.block.Ballot;
 import me.edwards.des.block.Block;
 import me.edwards.des.block.BlockChain;
+import me.edwards.des.block.BlockChainIO;
 import me.edwards.des.block.Vote;
 import me.edwards.des.net.Connection;
 import me.edwards.des.net.packet.PacketGetAddr;
@@ -38,6 +39,11 @@ import me.edwards.des.util.HashUtil;
 public class Launcher
 {
     /**
+     * The Global logger for DES (Used by Launcher and utilities)
+     */
+    public static final Logger GLOBAL = Logger.getLogger("DES");
+    
+    /**
      * Called on application launch
      * @param args
      */
@@ -46,13 +52,30 @@ public class Launcher
         Node node = new Node();
         if (args.length == 1)
         {
-            try
+            if (args[0].equalsIgnoreCase("-gen"))
             {
-                node.port = Integer.parseInt(args[0]);
+                Block genesis = new Block("0", Block.MAXIMUM_TARGET, new ArrayList<Ballot>());
+                genesis.genProof();
+                try
+                {
+                    BlockChainIO.save(new BlockChain(genesis), System.getProperty("user.home") + "/Desktop/DES/generated_blockchain.block");
+                }
+                catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
+                System.exit(0);
             }
-            catch (NumberFormatException e)
+            else
             {
-                node.name = args[0];
+                try
+                {
+                    node.port = Integer.parseInt(args[0]);
+                }
+                catch (NumberFormatException e)
+                {
+                    node.name = args[0];
+                }
             }
         }
         
@@ -67,12 +90,13 @@ public class Launcher
         }
         
         node.logger = Logger.getLogger("DES.node");
-        node.logger.info("DES Version " + Node.VERSION + " by Matthew Edwards");
-        node.logger.info("(C) Copyright 2015 by Matthew Edwards");
-        node.logger.info("------------------------------------------------");
-        node.logger.info("DES Node is starting up @ " + SimpleDateFormat.getDateTimeInstance().format(new Date(System.currentTimeMillis())) + "...");
         
-        node.logger.info("Loading Default Peer List...");
+        GLOBAL.info("DES Version " + Node.VERSION + " by Matthew Edwards");
+        GLOBAL.info("(C) Copyright 2015 by Matthew Edwards");
+        GLOBAL.info("------------------------------------------------");
+        GLOBAL.info("DES Node is starting up @ " + SimpleDateFormat.getDateTimeInstance().format(new Date(System.currentTimeMillis())) + "...");
+        
+        GLOBAL.info("Loading Default Peer List...");
         node.peerList = new ArrayList<String>();
         try
         {
@@ -80,19 +104,24 @@ public class Launcher
             while (reader.ready())
             {
                 node.peerList.add(reader.readLine());
-                node.logger.fine("> Added peer /" + node.peerList.get(node.peerList.size() - 1));
+                GLOBAL.fine("> Added peer /" + node.peerList.get(node.peerList.size() - 1));
             }
-            node.logger.info("Default Peer List loaded!");
+            GLOBAL.info("Default Peer List loaded!");
         }
         catch (Exception e)
         {
-            node.logger.log(Level.WARNING, "Could not load Default Peer List!", e);
+            GLOBAL.log(Level.WARNING, "Could not load Default Peer List!", e);
         }
         
-        node.logger.info("Loading BlockChain...");
-        Block block = new Block("0", Block.MAXIMUM_TARGET, new ArrayList<Ballot>());
-        block.genProof();
-        node.blockChain = new BlockChain(block);
+        try
+        {
+            node.blockChain = BlockChainIO.load(System.getProperty("user.home") + "/Desktop/DES/data.block");
+        }
+        catch (IOException e)
+        {
+            GLOBAL.log(Level.WARNING, "Could not load BlockChain! Shutting down...", e);
+            System.exit(0);
+        }
         
         node.start();
         
@@ -105,7 +134,7 @@ public class Launcher
                 {
                     String[] input = in.nextLine().split(" ");
                     
-                    node.logger.fine("Console input: " + Arrays.toString(input));
+                    GLOBAL.fine("Console input: " + Arrays.toString(input));
                     
                     if (input[0].equals(""))
                     {
@@ -121,7 +150,7 @@ public class Launcher
                         if (c != null)
                         {
                             c.send(new PacketPing(0L));
-                            node.logger.info("Sent PING to " + c);
+                            GLOBAL.info("Sent PING to " + c);
                         }
                     }
                     else if (input[0].equalsIgnoreCase("connect"))
@@ -139,7 +168,7 @@ public class Launcher
                         }
                         catch (Exception e)
                         {
-                            node.logger.log(Level.INFO, "Connect Error", e);
+                            GLOBAL.log(Level.WARNING, "Connect Error", e);
                         }
                     }
                     else if (input[0].equalsIgnoreCase("getaddr"))
@@ -148,21 +177,21 @@ public class Launcher
                         if (c != null)
                         {
                             c.send(new PacketGetAddr());
-                            node.logger.info("Sent GETADDR to " + c);
+                            GLOBAL.info("Sent GETADDR to " + c);
                         }
                     }
                     else if (input[0].equalsIgnoreCase("send"))
                     {
                         if (input[1].equalsIgnoreCase("ballot"))
                         {
-                            node.logger.info("Generating ballot...");
+                            GLOBAL.info("Generating ballot...");
                             ArrayList<Vote> votes = new ArrayList<Vote>();
                             votes.add(new Vote(0, "John Doe"));
                             votes.add(new Vote(1, "Satoshi"));
                             Ballot b = new Ballot("FFFFFFFFFFFFFFFF", "<Signature>", votes);
-                            node.logger.info("\n" + b.toString());
+                            GLOBAL.info("\n" + b.toString());
                             node.ballots.add(b);
-                            node.logger.info("Sending ballot...");
+                            GLOBAL.info("Sending ballot...");
                             PacketInv inv = new PacketInv();
                             inv.addInv(b);
                             node.sendToAll(inv);
@@ -185,7 +214,7 @@ public class Launcher
                                 Ballot b = new Ballot(ByteUtil.bytesToHex(ByteUtil.intToBytes(i)), "<Signature>", votes);
                                 node.ballots.add(b);
                             }
-                            node.logger.info("Generated Ballots!");
+                            GLOBAL.info("Generated Ballots!");
                         }
                         else if (input[1].equalsIgnoreCase("key"))
                         {
@@ -214,18 +243,77 @@ public class Launcher
                     }
                     else if (input[0].equalsIgnoreCase("myaddr"))
                     {
-                        node.logger.info(node.ip + ":" + node.port + " [" + node.name + "]");
+                        GLOBAL.info(node.ip + ":" + node.port + " [" + node.name + "]");
                     }
                     else if (input[0].equalsIgnoreCase("addr"))
                     {
                         for (Connection c : node.peers)
                         {
-                            node.logger.info(c.toString());
+                            GLOBAL.info(c.toString());
                         }
+                    }
+                    else if (input[0].equalsIgnoreCase("testload"))
+                    {
+                        try
+                        {
+                            node.blockChain = BlockChainIO.load(System.getProperty("user.home") + "/Desktop/DES/testload.block");
+                        }
+                        catch (Exception e)
+                        {
+                            e.printStackTrace();
+                        }
+                        long time = System.currentTimeMillis() - 100000;
+                        for (int i = 0; 1800 > i; i++)
+                        {
+                            int ballotNum = 10000;
+                            ArrayList<Vote> votes = new ArrayList<Vote>();
+                            votes.add(new Vote(0, "John Doe"));
+                            votes.add(new Vote(1, "Satoshi"));
+                            votes.add(new Vote(2, "John Doe2"));
+                            votes.add(new Vote(3, "Satoshi2"));
+                            votes.add(new Vote(4, "John Doe3"));
+                            votes.add(new Vote(5, "Satoshi3"));
+                            votes.add(new Vote(6, "John Doe4"));
+                            votes.add(new Vote(7, "Satoshi4"));
+                            votes.add(new Vote(8, "John Doe5"));
+                            votes.add(new Vote(9, "Satoshi5"));
+                            for (int j = 0; ballotNum > j; j++)
+                            {
+                                node.ballots.add(new Ballot(ByteUtil.bytesToHex(ByteUtil.intToBytes(i)), "<Signature>", votes));
+                            }
+                            if (System.currentTimeMillis() - time > 5000)
+                            {
+                                System.out.println((i / 18) + "%");
+                                time = System.currentTimeMillis();
+                            }
+                            while (node.blockGenHash != null)
+                            {
+                                try
+                                {
+                                    Thread.sleep(2);
+                                }
+                                catch (InterruptedException e)
+                                {
+                                    e.printStackTrace();
+                                }
+                            }
+                            node.generateBlock();
+                        }
+                        try
+                        {
+                            System.out.println("Saving...");
+                            Thread.sleep(1000);
+                            BlockChainIO.save(node.blockChain, System.getProperty("user.home") + "/Desktop/DES/testload.block");
+                        }
+                        catch (Exception e)
+                        {
+                            e.printStackTrace();
+                        }
+                        System.exit(0);
                     }
                     else
                     {
-                        node.logger.info("Invalid Command: " + Arrays.toString(input));
+                        GLOBAL.log(Level.WARNING,"Invalid Command: " + Arrays.toString(input));
                     }
                 }
                 else

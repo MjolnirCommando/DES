@@ -37,7 +37,7 @@ public class Node
     /**
      * Node Version
      */
-    public static final Version VERSION = new Version("1.0.0 DES_ALPHA");
+    public static final Version VERSION = new Version("15.12.21.1 DES_ALPHA");
     
     /**
      * Default Packet Buffer Size
@@ -544,6 +544,10 @@ public class Node
                     tempBallot.add(ballots.get(0));
                     ballots.remove(0);
                 }
+                while (tempBallot.contains(null))
+                {
+                    tempBallot.remove(null);
+                }
                 long time = System.currentTimeMillis();
                 blockGenHash = blockChain.getTop().getHash();
                 Block b = new Block(blockGenHash, Block.MAXIMUM_TARGET, tempBallot);
@@ -556,6 +560,7 @@ public class Node
                 logger.info("Notifying peers of block...");
                 sendToAll(inv);
                 blockGen = null;
+                blockGenHash = null;
             }
         }, "Block Generation");
         blockGen.start();
