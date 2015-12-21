@@ -55,11 +55,16 @@ public class Launcher
     public static void main(String[] args)
     {
         Node node = new Node();
+        node.peerList = new ArrayList<String>();
         for (int i = 0; args.length > i; i++)
         {
             if (args[i].equalsIgnoreCase("-dir"))
             {
                 DIR = args[++i];
+            }
+            else if (args[i].equalsIgnoreCase("-peer"))
+            {
+                node.peerList.add(args[++i]);
             }
             else if (args[i].equalsIgnoreCase("-port"))
             {
@@ -100,10 +105,9 @@ public class Launcher
         GLOBAL.info("DES Version " + Node.VERSION + " by Matthew Edwards");
         GLOBAL.info("(C) Copyright 2015 by Matthew Edwards");
         GLOBAL.info("------------------------------------------------");
-        GLOBAL.info("DES Node is starting up @ " + SimpleDateFormat.getDateTimeInstance().format(new Date(System.currentTimeMillis())) + "...");
+        GLOBAL.info("DES Node " + (node.name == null ? "" : "\"" + node.name + "\"") + " is starting up @ " + SimpleDateFormat.getDateTimeInstance().format(new Date(System.currentTimeMillis())) + "...");
         
         GLOBAL.info("Loading Default Peer List...");
-        node.peerList = new ArrayList<String>();
         try
         {
             BufferedReader reader = new BufferedReader(new InputStreamReader(Node.class.getClassLoader().getResourceAsStream("me/edwards/des/rec/peer_defaults.config")));

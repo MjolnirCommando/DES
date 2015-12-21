@@ -17,6 +17,7 @@ import me.edwards.des.net.packet.PacketAddr;
 import me.edwards.des.net.packet.PacketBallot;
 import me.edwards.des.net.packet.PacketBlock;
 import me.edwards.des.net.packet.PacketGetAddr;
+import me.edwards.des.net.packet.PacketGetBlocks;
 import me.edwards.des.net.packet.PacketGetData;
 import me.edwards.des.net.packet.PacketInv;
 import me.edwards.des.net.packet.PacketNotFound;
@@ -220,7 +221,15 @@ public class Node
                     logger.finer("Version valid! Sending verack and completing handshake...");
                     connection.send(new PacketVerack());
                     connection.setConnectionStatus(Connection.CONNECTION_BOTH);
-                    //TODO
+                    logger.finer("Requesting block information from " + connection);
+                    connection.send(new PacketGetBlocks(blockChain.getTop().getHash()));
+                    logger.finer("Sending ballot information to " + connection);
+                    PacketInv inv = new PacketInv();
+                    for (int i = 0; ballots.size() > i; i++)
+                    {
+                        inv.addInv(ballots.get(i));
+                    }
+                    connection.send(inv);
                     logger.finer("Requesting address cache information from " + connection);
                     connection.send(new PacketGetAddr());
                 }
@@ -244,7 +253,15 @@ public class Node
                 {
                     logger.finer("Received verack! Completing handshake...");
                     connection.setConnectionStatus(Connection.CONNECTION_BOTH);
-                    //TODO
+                    logger.finer("Requesting block information from " + connection);
+                    connection.send(new PacketGetBlocks(blockChain.getTop().getHash()));
+                    logger.finer("Sending ballot information to " + connection);
+                    PacketInv inv = new PacketInv();
+                    for (int i = 0; ballots.size() > i; i++)
+                    {
+                        inv.addInv(ballots.get(i));
+                    }
+                    connection.send(inv);
                     logger.finer("Requesting address cache information from " + connection);
                     connection.send(new PacketGetAddr());
                 }
@@ -423,6 +440,24 @@ public class Node
                         sendToAll(inv);
                     }
                 }, "Block Validation " + packet.getBlock().getHash()).start();
+                return;
+            }
+            case GETBLOCKS:
+            {
+                PacketGetBlocks packet = new PacketGetBlocks(data);
+                BlockChain.Node root = blockChain.getNode(packet.getHash());
+                if (root != null)
+                {
+                    PacketInv inv = new PacketInv();
+                    inv.addInv(root.getBlock());
+                    BlockChain.Node top = blockChain.getNode(blockChain.getTop().getHash());
+                    while (top != root)
+                    {
+                        inv.addInv(top.getBlock());
+                        top = top.getParent();
+                    }
+                    connection.send(inv);
+                }
                 return;
             }
             default: logger.finest("Could not parse invalid packet.");

@@ -195,7 +195,12 @@ public abstract class Packet
         /**
          * Block Packet Type, used to transfer block information between nodes
          */
-        BLOCK();
+        BLOCK(),
+
+        /**
+         * Get Blocks Packet Type, used to request blocks
+         */
+        GETBLOCKS();
         
         private byte id;
         

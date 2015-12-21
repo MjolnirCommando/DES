@@ -176,7 +176,7 @@ public class BlockChain
     }
     
     /**
-     * Returns the block in this BlockChain with the specified hash
+     * Returns the Block in this BlockChain with the specified hash
      * @param hash
      * @return
      */
@@ -201,10 +201,68 @@ public class BlockChain
         return null;
     }
     
-    private class Node
+    /**
+     * Returns the node in this BlockChain containing the Block with the specified hash
+     * @param hash
+     * @return
+     */
+    public Node getNode(String hash)
+    {
+        Node n = top;
+        while (n.height >= 0)
+        {
+            if (n.block.getHash().equalsIgnoreCase(hash))
+            {
+                return n;
+            }
+            if (n.height > 0)
+            {
+                n = n.parent;
+            }
+            else
+            {
+                break;
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * Represents a node in the BlockChain
+     * Created on: Dec 21, 2015 at 5:20:30 PM
+     * @author Matthew Edwards
+     */
+    public class Node
     {
         private Node parent;
         private int height;
         private Block block;
+        
+        /**
+         * Returns the parent node
+         * @return
+         */
+        public Node getParent()
+        {
+            return parent;
+        }
+        
+        /**
+         * Returns the height of this node in the BlockChain
+         * @return
+         */
+        public int getHeight()
+        {
+            return height;
+        }
+        
+        /**
+         * Returns the Block contained in this node
+         * @return
+         */
+        public Block getBlock()
+        {
+            return block;
+        }
     }
 }
