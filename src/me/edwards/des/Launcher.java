@@ -44,38 +44,44 @@ public class Launcher
     public static final Logger GLOBAL = Logger.getLogger("DES");
     
     /**
+     * Default directory for DES
+     */
+    public static String DIR = System.getProperty("user.home") + "/Desktop/DES/";
+    
+    /**
      * Called on application launch
      * @param args
      */
     public static void main(String[] args)
     {
         Node node = new Node();
-        if (args.length == 1)
+        for (int i = 0; args.length > i; i++)
         {
-            if (args[0].equalsIgnoreCase("-gen"))
+            if (args[i].equalsIgnoreCase("-dir"))
+            {
+                DIR = args[++i];
+            }
+            else if (args[i].equalsIgnoreCase("-port"))
+            {
+                node.port = Integer.parseInt(args[++i]);
+            }
+            else if (args[i].equalsIgnoreCase("-name"))
+            {
+                node.name = args[++i];
+            }
+            else if (args[i].equalsIgnoreCase("-gen"))
             {
                 Block genesis = new Block("0", Block.MAXIMUM_TARGET, new ArrayList<Ballot>());
                 genesis.genProof();
                 try
                 {
-                    BlockChainIO.save(new BlockChain(genesis), System.getProperty("user.home") + "/Desktop/DES/generated_blockchain.block");
+                    BlockChainIO.save(new BlockChain(genesis), DIR + "generated_blockchain.block");
                 }
                 catch (IOException e)
                 {
                     e.printStackTrace();
                 }
                 System.exit(0);
-            }
-            else
-            {
-                try
-                {
-                    node.port = Integer.parseInt(args[0]);
-                }
-                catch (NumberFormatException e)
-                {
-                    node.name = args[0];
-                }
             }
         }
         
@@ -115,7 +121,7 @@ public class Launcher
         
         try
         {
-            node.blockChain = BlockChainIO.load(System.getProperty("user.home") + "/Desktop/DES/data.block");
+            node.blockChain = BlockChainIO.load(DIR + "data.block");
         }
         catch (IOException e)
         {
@@ -256,7 +262,7 @@ public class Launcher
                     {
                         try
                         {
-                            node.blockChain = BlockChainIO.load(System.getProperty("user.home") + "/Desktop/DES/testload.block");
+                            node.blockChain = BlockChainIO.load(DIR + "testload.block");
                         }
                         catch (Exception e)
                         {
@@ -303,7 +309,7 @@ public class Launcher
                         {
                             System.out.println("Saving...");
                             Thread.sleep(1000);
-                            BlockChainIO.save(node.blockChain, System.getProperty("user.home") + "/Desktop/DES/testload.block");
+                            BlockChainIO.save(node.blockChain, DIR + "testload.block");
                         }
                         catch (Exception e)
                         {

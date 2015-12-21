@@ -120,7 +120,7 @@ public class BlockChainIO
                     ByteBuffer data = ByteBuffer.wrap(bin);
                     size = data.getInt();
                     num = data.getInt();
-                    Launcher.GLOBAL.info("Found " + size + " blocks and " + num + "partitions...");
+                    Launcher.GLOBAL.info("Found " + size + " blocks and " + num + " partitions...");
                     bytes = new byte[num][];
                 }
                 else
