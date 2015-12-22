@@ -262,6 +262,62 @@ public class Launcher
                             GLOBAL.info(c.toString());
                         }
                     }
+                    else if (input[0].equalsIgnoreCase("testappend"))
+                    {
+                        Block a = new Block("0", Block.MAXIMUM_TARGET, new ArrayList<Ballot>());
+                        a.genProof();
+                        Block b = new Block(a.getHash(), Block.MAXIMUM_TARGET, new ArrayList<Ballot>());
+                        b.genProof();
+                        Block c = new Block(b.getHash(), Block.MAXIMUM_TARGET, new ArrayList<Ballot>());
+                        c.genProof();
+                        Block d = new Block(c.getHash(), Block.MAXIMUM_TARGET, new ArrayList<Ballot>());
+                        d.genProof();
+                        Block e = new Block(d.getHash(), Block.MAXIMUM_TARGET, new ArrayList<Ballot>());
+                        e.genProof();
+
+                        Block f = new Block(b.getHash(), Block.MAXIMUM_TARGET, new ArrayList<Ballot>());
+                        f.genProof();
+                        Block g = new Block(f.getHash(), Block.MAXIMUM_TARGET, new ArrayList<Ballot>());
+                        g.genProof();
+
+                        Block h = new Block(a.getHash(), Block.MAXIMUM_TARGET, new ArrayList<Ballot>());
+                        h.genProof();
+                        
+                        Block i = new Block("2", Block.MAXIMUM_TARGET, new ArrayList<Ballot>());
+                        i.genProof();
+
+                        StringBuffer sb = new StringBuffer();
+                        
+                        BlockChain bc = new BlockChain(a);
+                        sb.append(bc + "\n");
+                        bc.append(i);
+                        sb.append(bc + "\n");
+                        bc.append(d);
+                        sb.append(bc + "\n");
+                        bc.append(h);
+                        sb.append(bc + "\n");
+                        bc.append(g);
+                        sb.append(bc + "\n");
+                        bc.append(c);
+                        sb.append(bc + "\n");
+                        bc.append(e);
+                        sb.append(bc + "\n");
+                        bc.append(f);
+                        sb.append(bc + "\n");
+                        bc.append(b);
+                        sb.append(bc + "\n");
+                        
+                        System.out.println(sb.toString()
+                                .replaceAll(a.getHash(), "A")
+                                .replaceAll(b.getHash(), "B")
+                                .replaceAll(c.getHash(), "C")
+                                .replaceAll(d.getHash(), "D")
+                                .replaceAll(e.getHash(), "E")
+                                .replaceAll(f.getHash(), "F")
+                                .replaceAll(g.getHash(), "G")
+                                .replaceAll(h.getHash(), "H")
+                                .replaceAll(i.getHash(), "I"));
+                    }
                     else if (input[0].equalsIgnoreCase("testload"))
                     {
                         try
@@ -273,9 +329,9 @@ public class Launcher
                             e.printStackTrace();
                         }
                         long time = System.currentTimeMillis() - 100000;
-                        for (int i = 0; 1800 > i; i++)
+                        for (int i = 0; 10000 > i; i++)
                         {
-                            int ballotNum = 10000;
+                            int ballotNum = 1800;
                             ArrayList<Vote> votes = new ArrayList<Vote>();
                             votes.add(new Vote(0, "John Doe"));
                             votes.add(new Vote(1, "Satoshi"));

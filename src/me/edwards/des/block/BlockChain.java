@@ -10,9 +10,9 @@ import java.util.ArrayList;
  */
 public class BlockChain
 {
-    private int size;
     private Node top;
     private ArrayList<Block> queue;
+    private ArrayList<Node> topList;
     
     /**
      * Creates new BlockChain from the genesis block
@@ -23,8 +23,9 @@ public class BlockChain
         this.top = new Node();
         this.top.height = 0;
         this.top.block = genesis;
-        this.size = 1;
-        queue = new ArrayList<Block>();
+        this.queue = new ArrayList<Block>();
+        this.topList = new ArrayList<Node>();
+        this.topList.add(top);
     }
     
     /**
@@ -35,6 +36,7 @@ public class BlockChain
     public BlockChain(int size, byte[][] binary)
     {
         this.queue = new ArrayList<Block>();
+        this.topList = new ArrayList<Node>();
         Node n = null;
         int height = size - 1;
         for (int i = 0; binary.length > i; i++)
@@ -60,6 +62,7 @@ public class BlockChain
                 n = child;
             }
         }
+        this.topList.add(this.top);
     }
     
     /**
@@ -71,7 +74,7 @@ public class BlockChain
         int MAX_SIZE = 1024 * 1024 * 5;
         long length = 0;
         Node n = top;
-        for (long i = 0; size > i; i++)
+        for (long i = 0; getSize() > i; i++)
         {
             length += 4 + n.block.getBytes().length;
             n = top.parent;
@@ -81,7 +84,7 @@ public class BlockChain
         for (int i = 0; bytes.length > i; i++)
         {
             ByteBuffer data = ByteBuffer.allocate((int) Math.min(length, MAX_SIZE));
-            for (int j = 0; size > j; j++)
+            for (int j = 0; getSize() > j; j++)
             {
                 if (n.block.getBytes().length + data.position() > data.limit())
                 {
@@ -101,20 +104,6 @@ public class BlockChain
     }
     
     /**
-     * Adds a block to the top of this BlockChain
-     * @param block
-     */
-    private void append(Block block)
-    {
-        Node second = top;
-        top = new Node();
-        top.parent = second;
-        top.height = second.height + 1;
-        top.block = block;
-        size++;
-    }
-    
-    /**
      * Returns the block on the top of the BlockChain
      * @return
      */
@@ -129,24 +118,85 @@ public class BlockChain
      */
     public int getSize()
     {
-        return size;
+        return top.height + 1;
     }
     
     /**
      * Queues the specified block to be added to this BlockChain
      * @param block
      */
-    public void queue(Block block)
+    public void append(Block block)
     {
-        if (getTop().getHash().equalsIgnoreCase(block.getPrevHash()))
+        queue.add(0, block);
+        
+        for (int i = 0; queue.size() > i; i++)
         {
-            append(block);
+            for (int j = 0; topList.size() > j; j++)
+            {
+                if (topList.get(j).getBlock().getHash().equalsIgnoreCase(queue.get(i).getPrevHash()))
+                {
+                    Node n = new Node();
+                    n.parent = topList.get(j);
+                    n.height = topList.get(j).getHeight() + 1;
+                    n.block = queue.get(i);
+                    topList.remove(j);
+                    topList.add(n);
+                    queue.remove(i);
+                    i = -1;
+                    break;
+                }
+            }
+            if (i > -1)
+            {
+                Node conNode = null;
+                for (int k = 0; topList.size() > k; k++)
+                {
+                    Node n = topList.get(k);
+                    while (n.height >= 0)
+                    {
+                        if (n.block.getHash().equalsIgnoreCase(queue.get(i).getPrevHash()))
+                        {
+                            conNode = n;
+                        }
+                        if (n.height > 0)
+                        {
+                            n = n.parent;
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                    if (conNode != null)
+                    {
+                        Node n2 = new Node();
+                        n2.parent = conNode;
+                        n2.height = conNode.height + 1;
+                        n2.block = queue.get(i);
+                        topList.add(n2);
+                        queue.remove(i);
+                        i = -1;
+                        break;
+                    }
+                }
+            }
         }
-        else
+        
+        Node temp = top;
+        for (int i = 0; topList.size() > i; i++)
         {
-            //TODO
-            queue.add(block);
+            if (topList.get(i).height + 4 < getSize())
+            {
+                topList.remove(i);
+                i--;
+                continue;
+            }
+            if (topList.get(i).height > temp.height)
+            {
+                temp = topList.get(i);
+            }
         }
+        top = temp;
     }
     
     /**
@@ -225,6 +275,33 @@ public class BlockChain
             }
         }
         return null;
+    }
+    
+    @Override
+    public String toString()
+    {
+        StringBuffer sb = new StringBuffer();
+        sb.append("------------------------------------\n");
+        sb.append("Size: " + getSize() + "\n");
+        sb.append("TOPLIST:\n");
+        for (int i = 0; topList.size() > i; i++)
+        {
+            sb.append("\t" + topList.get(i).getBlock().getHash() + "\n");
+        }
+        sb.append("QUEUE:\n");
+        for (int i = 0; queue.size() > i; i++)
+        {
+            sb.append("\t" + queue.get(i).getHash() + "\n");
+        }
+        sb.append("LONGEST:\n");
+        Node n = top;
+        while (n.parent != null)
+        {
+            sb.append("\t" + n.getBlock().getHash() + "\n");
+            n = n.parent;
+        }
+        sb.append("\t" + n.getBlock().getHash() + "\n");
+        return sb.toString();
     }
     
     /**

@@ -434,7 +434,7 @@ public class Node
                         {
                             return;
                         }
-                        blockChain.queue(b);
+                        blockChain.append(b);
                         PacketInv inv = new PacketInv();
                         inv.addInv(b);
                         sendToAll(inv);
@@ -450,11 +450,16 @@ public class Node
                 {
                     PacketInv inv = new PacketInv();
                     inv.addInv(root.getBlock());
+                    ArrayList<Block> blocks = new ArrayList<Block>();
                     BlockChain.Node top = blockChain.getNode(blockChain.getTop().getHash());
                     while (top != root)
                     {
-                        inv.addInv(top.getBlock());
+                        blocks.add(top.getBlock());
                         top = top.getParent();
+                    }
+                    for (int i = 0; blocks.size() > i; i++)
+                    {
+                        inv.addInv(blocks.get(blocks.size() - 1 - i));
                     }
                     connection.send(inv);
                 }
@@ -589,7 +594,7 @@ public class Node
                 b.genProof();
                 logger.info("Generated Block in " + ((System.currentTimeMillis() - time) / 1000) + " seconds!\n" + b.toString());
                 logger.info("Adding block to BlockChain...");
-                blockChain.queue(b);
+                blockChain.append(b);
                 PacketInv inv = new PacketInv();
                 inv.addInv(b);
                 logger.info("Notifying peers of block...");
