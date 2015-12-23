@@ -152,7 +152,8 @@ public class BlockChain
                 for (int k = 0; topList.size() > k; k++)
                 {
                     Node n = topList.get(k);
-                    while (n.height >= 0)
+                    int height = n.height;
+                    while (n.height >= 0 && height - n.height < 10)
                     {
                         if (n.block.getHash().equalsIgnoreCase(queue.get(i).getPrevHash()))
                         {

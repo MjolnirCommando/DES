@@ -329,7 +329,7 @@ public class Launcher
                             e.printStackTrace();
                         }
                         long time = System.currentTimeMillis() - 100000;
-                        for (int i = 0; 10000 > i; i++)
+                        for (int i = 0; 1000 > i; i++)
                         {
                             int ballotNum = 1800;
                             ArrayList<Vote> votes = new ArrayList<Vote>();
@@ -349,7 +349,7 @@ public class Launcher
                             }
                             if (System.currentTimeMillis() - time > 5000)
                             {
-                                System.out.println((i / 18) + "%");
+                                System.out.println((i / 10) + "%");
                                 time = System.currentTimeMillis();
                             }
                             while (node.blockGenHash != null)

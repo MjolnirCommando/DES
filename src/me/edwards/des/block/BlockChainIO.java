@@ -140,8 +140,9 @@ public class BlockChainIO
             }
             zin.close();
 
+            BlockChain bc = new BlockChain(size, bytes);
             Launcher.GLOBAL.info("BlockChain loaded in " + (System.currentTimeMillis() - time) / 1000 + " seconds!");
-            return new BlockChain(size, bytes);
+            return bc;
         }
         else
         {
