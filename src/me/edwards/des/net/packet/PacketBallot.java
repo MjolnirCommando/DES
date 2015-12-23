@@ -1,21 +1,24 @@
 package me.edwards.des.net.packet;
 
 import java.nio.ByteBuffer;
-
 import me.edwards.des.block.Ballot;
 
 /**
  * Ballot Packet<br>
- * This packet is used to transfer ballot data between nodes.
- * Created on: Nov 3, 2015 at 10:28:29 AM
+ * This packet is used to transfer ballot data between nodes. Created on: Nov 3,
+ * 2015 at 10:28:29 AM
+ * 
  * @author Matthew Edwards
  */
-public class PacketBallot extends Packet
+public class PacketBallot
+    extends Packet
 {
     private Ballot ballot;
-    
+
+
     /**
      * Creates new PacketBallot
+     * 
      * @param ballot
      */
     public PacketBallot(Ballot ballot)
@@ -23,10 +26,13 @@ public class PacketBallot extends Packet
         super(PacketTypes.BALLOT.getID());
         this.ballot = ballot;
     }
-    
+
+
     /**
      * Creates new PacketBallot
-     * @param binary Packet binary data
+     * 
+     * @param binary
+     *            Packet binary data
      */
     public PacketBallot(byte[] binary)
     {
@@ -38,15 +44,18 @@ public class PacketBallot extends Packet
         data.get(bytes, 0, size - 5);
         this.ballot = new Ballot(bytes);
     }
-    
+
+
     /**
      * Returns the ballot transferred by this packet
+     * 
      * @return
      */
     public Ballot getBallot()
     {
         return ballot;
     }
+
 
     @Override
     public byte[] getBinary()

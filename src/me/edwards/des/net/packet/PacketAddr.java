@@ -2,23 +2,27 @@ package me.edwards.des.net.packet;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-
 import me.edwards.des.net.Connection;
 
 /**
  * Address Packet<br>
- * This packet is sent as a response to a GETADDR Packet with a list of the responding
- * node's known peers. It is used in the bootstrapping process.
+ * This packet is sent as a response to a GETADDR Packet with a list of the
+ * responding node's known peers. It is used in the bootstrapping process.
  * Created on: Oct 19, 2015 at 10:46:14 AM
+ * 
  * @author Matthew Edwards
  */
-public class PacketAddr extends Packet
+public class PacketAddr
+    extends Packet
 {
     private String[] peerList;
-    
+
+
     /**
      * Creates new PacketAddr
-     * @param peers List of current peers
+     * 
+     * @param peers
+     *            List of current peers
      */
     public PacketAddr(ArrayList<Connection> peers)
     {
@@ -29,10 +33,13 @@ public class PacketAddr extends Packet
             peerList[i] = peers.get(i).getHostName();
         }
     }
-    
+
+
     /**
      * Creates new PacketAddr
-     * @param binary Packet binary data
+     * 
+     * @param binary
+     *            Packet binary data
      */
     public PacketAddr(byte[] binary)
     {
@@ -48,15 +55,18 @@ public class PacketAddr extends Packet
             peerList[i] = new String(strBytes);
         }
     }
-    
+
+
     /**
      * Returns this packet's peer list
+     * 
      * @return
      */
     public String[] getPeers()
     {
         return peerList;
     }
+
 
     @Override
     public byte[] getBinary()

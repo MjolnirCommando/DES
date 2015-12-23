@@ -2,32 +2,37 @@ package me.edwards.des.block;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-
 import me.edwards.des.util.ByteUtil;
 import me.edwards.des.util.HashUtil;
 
 /**
- * Data structure to store a maintain a single cast vote.
- * Created on: Nov 1, 2015 at 11:30:16 PM
+ * Data structure to store a maintain a single cast vote. Created on: Nov 1,
+ * 2015 at 11:30:16 PM
+ * 
  * @author Matthew Edwards
  */
 public class Ballot
 {
-    private final int VERSION = 1;
-    private int version;
-    private String id;
+    private final int       VERSION = 1;
+    private int             version;
+    private String          id;
     private ArrayList<Vote> votes;
-    private String signature;
-    
-    private String signatureRoot;
-    private String root;
-    private byte[] bytes;
-    
+    private String          signature;
+
+    private String          signatureRoot;
+    private String          root;
+    private byte[]          bytes;
+
+
     /**
      * Creates new Ballot
-     * @param id UUID of ballot caster
-     * @param signature Signature on this ballot
-     * @param votes List of votes
+     * 
+     * @param id
+     *            UUID of ballot caster
+     * @param signature
+     *            Signature on this ballot
+     * @param votes
+     *            List of votes
      */
     public Ballot(String id, String signature, ArrayList<Vote> votes)
     {
@@ -35,13 +40,14 @@ public class Ballot
         this.id = HashUtil.generateLeadingZeros(id, 16);
         this.votes = votes;
         this.signature = signature;
-        
+
         int size = 0;
         for (int i = 0; votes.size() > i; i++)
         {
             size += votes.get(i).getBytes().length;
         }
-        ByteBuffer buffer = ByteBuffer.allocate(4 + 8 + 4 + size + 4 + signature.length());
+        ByteBuffer buffer =
+            ByteBuffer.allocate(4 + 8 + 4 + size + 4 + signature.length());
         buffer.putInt(version);
         buffer.put(ByteUtil.hexToBytes(this.id));
         buffer.putInt(votes.size());
@@ -55,10 +61,13 @@ public class Ballot
         this.bytes = buffer.array();
         this.root = HashUtil.generateHash(this.bytes);
     }
-    
+
+
     /**
      * Creates new Ballot from binary data
-     * @param binary Binary data
+     * 
+     * @param binary
+     *            Binary data
      */
     public Ballot(byte[] binary)
     {
@@ -88,81 +97,94 @@ public class Ballot
         data.get(signatureRootBytes, 0, rootLength);
         this.signatureRoot = HashUtil.generateHash(signatureRootBytes);
     }
-    
+
+
     /**
      * Returns the Ballot ID
+     * 
      * @return
      */
     public String getID()
     {
         return id;
     }
-    
+
+
     /**
      * Returns the Ballot signature
+     * 
      * @return
      */
     public String getSignature()
     {
         return signature;
     }
-    
+
+
     /**
      * Returns the signature root hash of this ballot
+     * 
      * @return
      */
     public String getSignatureRoot()
     {
         return signatureRoot;
     }
-    
+
+
     /**
      * Returns the root hash of this ballot
+     * 
      * @return
      */
     public String getRoot()
     {
         return root;
     }
-    
+
+
     /**
      * Returns the list of votes on this ballot
+     * 
      * @return
      */
     public ArrayList<Vote> getVotes()
     {
         return votes;
     }
-    
+
+
     /**
      * Returns the byte data of this ballot
+     * 
      * @return
      */
     public byte[] getBytes()
     {
         return bytes;
     }
-    
+
+
     @Override
     public String toString()
     {
         StringBuffer voteDigest = new StringBuffer();
         for (int i = 0; votes.size() > i; i++)
         {
-            voteDigest.append("\n\t" + votes.get(i).getID() + ":" + votes.get(i).getVote());
+            voteDigest.append("\n\t" + votes.get(i).getID() + ":"
+                + votes.get(i).getVote());
         }
-        return "--- Ballot --------------------------------"
-                + "\nID:        " + id
-                + "\nVersion:   " + version
-                + "\nSignature: " + signature
-                + "\nVotes (" + votes.size() + "): "
-                + voteDigest.toString()
-                + "\n-------------------------------------------";
+        return "--- Ballot --------------------------------" + "\nID:        "
+            + id + "\nVersion:   " + version + "\nSignature: " + signature
+            + "\nVotes (" + votes.size() + "): " + voteDigest.toString()
+            + "\n-------------------------------------------";
     }
-    
+
+
     @Override
     public boolean equals(Object obj)
     {
-        return obj instanceof Ballot && ((Ballot) obj).getRoot().equals(getRoot());
+        return obj instanceof Ballot
+            && ((Ballot)obj).getRoot().equals(getRoot());
     }
 }

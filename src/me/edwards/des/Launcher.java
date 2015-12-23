@@ -18,7 +18,6 @@ import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
-
 import me.edwards.des.block.Ballot;
 import me.edwards.des.block.Block;
 import me.edwards.des.block.BlockChain;
@@ -32,8 +31,9 @@ import me.edwards.des.util.ByteUtil;
 import me.edwards.des.util.HashUtil;
 
 /**
- * Handles launch of a single Node and its console input
- * Created on: Dec 21, 2015 at 10:11:56 AM
+ * Handles launch of a single Node and its console input Created on: Dec 21,
+ * 2015 at 10:11:56 AM
+ * 
  * @author Matthew Edwards
  */
 public class Launcher
@@ -42,14 +42,17 @@ public class Launcher
      * The Global logger for DES (Used by Launcher and utilities)
      */
     public static final Logger GLOBAL = Logger.getLogger("DES");
-    
+
     /**
      * Default directory for DES
      */
-    public static String DIR = System.getProperty("user.home") + "/Desktop/DES/";
-    
+    public static String       DIR    = System.getProperty("user.home")
+                                          + "/Desktop/DES/";
+
+
     /**
      * Called on application launch
+     * 
      * @param args
      */
     public static void main(String[] args)
@@ -76,11 +79,16 @@ public class Launcher
             }
             else if (args[i].equalsIgnoreCase("-gen"))
             {
-                Block genesis = new Block("0", Block.MAXIMUM_TARGET, new ArrayList<Ballot>());
+                Block genesis =
+                    new Block(
+                        "0",
+                        Block.MAXIMUM_TARGET,
+                        new ArrayList<Ballot>());
                 genesis.genProof();
                 try
                 {
-                    BlockChainIO.save(new BlockChain(genesis), DIR + "generated_blockchain.block");
+                    BlockChainIO.save(new BlockChain(genesis), DIR
+                        + "generated_blockchain.block");
                 }
                 catch (IOException e)
                 {
@@ -89,32 +97,42 @@ public class Launcher
                 System.exit(0);
             }
         }
-        
+
         try
         {
-            LogManager.getLogManager().readConfiguration(Node.class.getClassLoader().getResourceAsStream("me/edwards/des/rec/log.config"));
+            LogManager.getLogManager().readConfiguration(
+                Node.class.getClassLoader().getResourceAsStream(
+                    "me/edwards/des/rec/log.config"));
         }
         catch (IOException e)
         {
             System.out.println("Could not initialize logger! Shutting down...");
             System.exit(0);
         }
-        
+
         node.logger = Logger.getLogger("DES.node");
-        
+
         GLOBAL.info("DES Version " + Node.VERSION + " by Matthew Edwards");
         GLOBAL.info("(C) Copyright 2015 by Matthew Edwards");
         GLOBAL.info("------------------------------------------------");
-        GLOBAL.info("DES Node " + (node.name == null ? "" : "\"" + node.name + "\"") + " is starting up @ " + SimpleDateFormat.getDateTimeInstance().format(new Date(System.currentTimeMillis())) + "...");
-        
+        GLOBAL.info("DES Node "
+            + (node.name == null ? "" : "\"" + node.name + "\"")
+            + " is starting up @ "
+            + SimpleDateFormat.getDateTimeInstance().format(
+                new Date(System.currentTimeMillis())) + "...");
+
         GLOBAL.info("Loading Default Peer List...");
         try
         {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(Node.class.getClassLoader().getResourceAsStream("me/edwards/des/rec/peer_defaults.config")));
+            BufferedReader reader =
+                new BufferedReader(new InputStreamReader(Node.class
+                    .getClassLoader().getResourceAsStream(
+                        "me/edwards/des/rec/peer_defaults.config")));
             while (reader.ready())
             {
                 node.peerList.add(reader.readLine());
-                GLOBAL.fine("> Added peer /" + node.peerList.get(node.peerList.size() - 1));
+                GLOBAL.fine("> Added peer /"
+                    + node.peerList.get(node.peerList.size() - 1));
             }
             GLOBAL.info("Default Peer List loaded!");
         }
@@ -122,19 +140,22 @@ public class Launcher
         {
             GLOBAL.log(Level.WARNING, "Could not load Default Peer List!", e);
         }
-        
+
         try
         {
             node.blockChain = BlockChainIO.load(DIR + "data.block");
         }
         catch (IOException e)
         {
-            GLOBAL.log(Level.WARNING, "Could not load BlockChain! Shutting down...", e);
+            GLOBAL.log(
+                Level.WARNING,
+                "Could not load BlockChain! Shutting down...",
+                e);
             System.exit(0);
         }
-        
+
         node.start();
-        
+
         Scanner in = new Scanner(System.in);
         while (node.running)
         {
@@ -143,9 +164,9 @@ public class Launcher
                 if (System.in.available() != 0 && in.hasNextLine())
                 {
                     String[] input = in.nextLine().split(" ");
-                    
+
                     GLOBAL.fine("Console input: " + Arrays.toString(input));
-                    
+
                     if (input[0].equals(""))
                     {
                         continue;
@@ -173,7 +194,9 @@ public class Launcher
                             }
                             else
                             {
-                                node.connect(InetAddress.getByName(input[1]), Integer.parseInt(input[2]));
+                                node.connect(
+                                    InetAddress.getByName(input[1]),
+                                    Integer.parseInt(input[2]));
                             }
                         }
                         catch (Exception e)
@@ -198,7 +221,11 @@ public class Launcher
                             ArrayList<Vote> votes = new ArrayList<Vote>();
                             votes.add(new Vote(0, "John Doe"));
                             votes.add(new Vote(1, "Satoshi"));
-                            Ballot b = new Ballot("FFFFFFFFFFFFFFFF", "<Signature>", votes);
+                            Ballot b =
+                                new Ballot(
+                                    "FFFFFFFFFFFFFFFF",
+                                    "<Signature>",
+                                    votes);
                             GLOBAL.info("\n" + b.toString());
                             node.ballots.add(b);
                             GLOBAL.info("Sending ballot...");
@@ -221,39 +248,54 @@ public class Launcher
                             votes.add(new Vote(1, "Satoshi"));
                             for (int i = 0; ballotNum > i; i++)
                             {
-                                Ballot b = new Ballot(ByteUtil.bytesToHex(ByteUtil.intToBytes(i)), "<Signature>", votes);
+                                Ballot b =
+                                    new Ballot(ByteUtil.bytesToHex(ByteUtil
+                                        .intToBytes(i)), "<Signature>", votes);
                                 node.ballots.add(b);
                             }
                             GLOBAL.info("Generated Ballots!");
                         }
                         else if (input[1].equalsIgnoreCase("key"))
                         {
-                            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("EC");
-                            SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
+                            KeyPairGenerator keyGen =
+                                KeyPairGenerator.getInstance("EC");
+                            SecureRandom random =
+                                SecureRandom.getInstance("SHA1PRNG");
 
                             keyGen.initialize(256, random);
 
                             KeyPair pair = keyGen.generateKeyPair();
                             PrivateKey priv = pair.getPrivate();
-                            ECPublicKey pub = (ECPublicKey) pair.getPublic();
-                            
-                            Signature dsa = Signature.getInstance("SHA1withECDSA");
+                            ECPublicKey pub = (ECPublicKey)pair.getPublic();
+
+                            Signature dsa =
+                                Signature.getInstance("SHA1withECDSA");
                             dsa.initSign(priv);
-                            String root = HashUtil.generateHash("THIS IS THE ROOT".getBytes());
+                            String root =
+                                HashUtil.generateHash("THIS IS THE ROOT"
+                                    .getBytes());
                             dsa.update(root.getBytes());
                             byte[] realSig = dsa.sign();
                             dsa.initVerify(pub);
                             dsa.update(root.getBytes());
                             System.out.println("Root:      " + root);
-                            System.out.println("Signature: " + HashUtil.generateLeadingZeros(ByteUtil.bytesToHex(realSig)));
-                            System.out.println("Pub Key X: " + HashUtil.generateLeadingZeros(pub.getW().getAffineX().toString(16)));
-                            System.out.println("Pub Key Y: " + HashUtil.generateLeadingZeros(pub.getW().getAffineY().toString(16)));
-                            System.out.println("Verified:  " + dsa.verify(realSig));
+                            System.out.println("Signature: "
+                                + HashUtil.generateLeadingZeros(ByteUtil
+                                    .bytesToHex(realSig)));
+                            System.out.println("Pub Key X: "
+                                + HashUtil.generateLeadingZeros(pub.getW()
+                                    .getAffineX().toString(16)));
+                            System.out.println("Pub Key Y: "
+                                + HashUtil.generateLeadingZeros(pub.getW()
+                                    .getAffineY().toString(16)));
+                            System.out.println("Verified:  "
+                                + dsa.verify(realSig));
                         }
                     }
                     else if (input[0].equalsIgnoreCase("myaddr"))
                     {
-                        GLOBAL.info(node.ip + ":" + node.port + " [" + node.name + "]");
+                        GLOBAL.info(node.ip + ":" + node.port + " ["
+                            + node.name + "]");
                     }
                     else if (input[0].equalsIgnoreCase("addr"))
                     {
@@ -264,30 +306,66 @@ public class Launcher
                     }
                     else if (input[0].equalsIgnoreCase("testappend"))
                     {
-                        Block a = new Block("0", Block.MAXIMUM_TARGET, new ArrayList<Ballot>());
+                        Block a =
+                            new Block(
+                                "0",
+                                Block.MAXIMUM_TARGET,
+                                new ArrayList<Ballot>());
                         a.genProof();
-                        Block b = new Block(a.getHash(), Block.MAXIMUM_TARGET, new ArrayList<Ballot>());
+                        Block b =
+                            new Block(
+                                a.getHash(),
+                                Block.MAXIMUM_TARGET,
+                                new ArrayList<Ballot>());
                         b.genProof();
-                        Block c = new Block(b.getHash(), Block.MAXIMUM_TARGET, new ArrayList<Ballot>());
+                        Block c =
+                            new Block(
+                                b.getHash(),
+                                Block.MAXIMUM_TARGET,
+                                new ArrayList<Ballot>());
                         c.genProof();
-                        Block d = new Block(c.getHash(), Block.MAXIMUM_TARGET, new ArrayList<Ballot>());
+                        Block d =
+                            new Block(
+                                c.getHash(),
+                                Block.MAXIMUM_TARGET,
+                                new ArrayList<Ballot>());
                         d.genProof();
-                        Block e = new Block(d.getHash(), Block.MAXIMUM_TARGET, new ArrayList<Ballot>());
+                        Block e =
+                            new Block(
+                                d.getHash(),
+                                Block.MAXIMUM_TARGET,
+                                new ArrayList<Ballot>());
                         e.genProof();
 
-                        Block f = new Block(b.getHash(), Block.MAXIMUM_TARGET, new ArrayList<Ballot>());
+                        Block f =
+                            new Block(
+                                b.getHash(),
+                                Block.MAXIMUM_TARGET,
+                                new ArrayList<Ballot>());
                         f.genProof();
-                        Block g = new Block(f.getHash(), Block.MAXIMUM_TARGET, new ArrayList<Ballot>());
+                        Block g =
+                            new Block(
+                                f.getHash(),
+                                Block.MAXIMUM_TARGET,
+                                new ArrayList<Ballot>());
                         g.genProof();
 
-                        Block h = new Block(a.getHash(), Block.MAXIMUM_TARGET, new ArrayList<Ballot>());
+                        Block h =
+                            new Block(
+                                a.getHash(),
+                                Block.MAXIMUM_TARGET,
+                                new ArrayList<Ballot>());
                         h.genProof();
-                        
-                        Block i = new Block("2", Block.MAXIMUM_TARGET, new ArrayList<Ballot>());
+
+                        Block i =
+                            new Block(
+                                "2",
+                                Block.MAXIMUM_TARGET,
+                                new ArrayList<Ballot>());
                         i.genProof();
 
                         StringBuffer sb = new StringBuffer();
-                        
+
                         BlockChain bc = new BlockChain(a);
                         sb.append(bc + "\n");
                         bc.append(i);
@@ -306,23 +384,24 @@ public class Launcher
                         sb.append(bc + "\n");
                         bc.append(b);
                         sb.append(bc + "\n");
-                        
+
                         System.out.println(sb.toString()
-                                .replaceAll(a.getHash(), "A")
-                                .replaceAll(b.getHash(), "B")
-                                .replaceAll(c.getHash(), "C")
-                                .replaceAll(d.getHash(), "D")
-                                .replaceAll(e.getHash(), "E")
-                                .replaceAll(f.getHash(), "F")
-                                .replaceAll(g.getHash(), "G")
-                                .replaceAll(h.getHash(), "H")
-                                .replaceAll(i.getHash(), "I"));
+                            .replaceAll(a.getHash(), "A")
+                            .replaceAll(b.getHash(), "B")
+                            .replaceAll(c.getHash(), "C")
+                            .replaceAll(d.getHash(), "D")
+                            .replaceAll(e.getHash(), "E")
+                            .replaceAll(f.getHash(), "F")
+                            .replaceAll(g.getHash(), "G")
+                            .replaceAll(h.getHash(), "H")
+                            .replaceAll(i.getHash(), "I"));
                     }
                     else if (input[0].equalsIgnoreCase("testload"))
                     {
                         try
                         {
-                            node.blockChain = BlockChainIO.load(DIR + "testload.block");
+                            node.blockChain =
+                                BlockChainIO.load(DIR + "testload.block");
                         }
                         catch (Exception e)
                         {
@@ -345,7 +424,12 @@ public class Launcher
                             votes.add(new Vote(9, "Satoshi5"));
                             for (int j = 0; ballotNum > j; j++)
                             {
-                                node.ballots.add(new Ballot(ByteUtil.bytesToHex(ByteUtil.intToBytes(i)), "<Signature>", votes));
+                                node.ballots
+                                    .add(new Ballot(
+                                        ByteUtil.bytesToHex(ByteUtil
+                                            .intToBytes(i)),
+                                        "<Signature>",
+                                        votes));
                             }
                             if (System.currentTimeMillis() - time > 5000)
                             {
@@ -369,7 +453,8 @@ public class Launcher
                         {
                             System.out.println("Saving...");
                             Thread.sleep(1000);
-                            BlockChainIO.save(node.blockChain, DIR + "testload.block");
+                            BlockChainIO.save(node.blockChain, DIR
+                                + "testload.block");
                         }
                         catch (Exception e)
                         {
@@ -379,7 +464,9 @@ public class Launcher
                     }
                     else
                     {
-                        GLOBAL.log(Level.WARNING,"Invalid Command: " + Arrays.toString(input));
+                        GLOBAL.log(
+                            Level.WARNING,
+                            "Invalid Command: " + Arrays.toString(input));
                     }
                 }
                 else

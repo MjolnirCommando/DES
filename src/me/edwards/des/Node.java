@@ -7,7 +7,6 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import me.edwards.des.block.Ballot;
 import me.edwards.des.block.Block;
 import me.edwards.des.block.BlockChain;
@@ -27,10 +26,10 @@ import me.edwards.des.net.packet.PacketVerack;
 import me.edwards.des.net.packet.PacketVersion;
 import me.edwards.des.util.Version;
 
-
 /**
- * A Node meant to operate on the DES network.
- * Created on: Oct 16, 2015 at 9:35:54 PM
+ * A Node meant to operate on the DES network. Created on: Oct 16, 2015 at
+ * 9:35:54 PM
+ * 
  * @author Matthew Edwards
  */
 public class Node
@@ -38,36 +37,38 @@ public class Node
     /**
      * Node Version
      */
-    public static final Version VERSION = new Version("15.12.21.1 DES_ALPHA");
-    
+    public static final Version     VERSION     = new Version(
+                                                    "15.12.21.1 DES_ALPHA");
+
     /**
      * Default Packet Buffer Size
      */
-    public static final int BUFFER_SIZE = 4096;
-    
-    protected ArrayList<String> peerList;
-    
-    protected Logger logger;
+    public static final int         BUFFER_SIZE = 4096;
 
-    protected BlockChain blockChain;
-    protected String blockGenHash;
-    
+    protected ArrayList<String>     peerList;
+
+    protected Logger                logger;
+
+    protected BlockChain            blockChain;
+    protected String                blockGenHash;
+
     protected ArrayList<Connection> peers;
-    protected ArrayList<Ballot> ballots;
-    
-    private ArrayList<String> dataRequests;
-    
-    protected InetAddress ip;
-    
-    private ServerSocket socket;
-    
-    protected int port;
-    protected String name;
-    protected boolean running;
-    
-    private Thread handshake;
-    private Thread blockGen = null;
-    
+    protected ArrayList<Ballot>     ballots;
+
+    private ArrayList<String>       dataRequests;
+
+    protected InetAddress           ip;
+
+    private ServerSocket            socket;
+
+    protected int                   port;
+    protected String                name;
+    protected boolean               running;
+
+    private Thread                  handshake;
+    private Thread                  blockGen    = null;
+
+
     /**
      * Starts the Node
      */
@@ -76,7 +77,7 @@ public class Node
         peers = new ArrayList<Connection>();
         ballots = new ArrayList<Ballot>();
         dataRequests = new ArrayList<String>();
-        
+
         try
         {
             socket = new ServerSocket(port);
@@ -87,19 +88,19 @@ public class Node
             {
                 name = ip.getHostAddress() + ":" + port;
             }
-            logger.info("Starting Node on /" + ip.getHostAddress() + ":" + port + " ...");
+            logger.info("Starting Node on /" + ip.getHostAddress() + ":" + port
+                + " ...");
         }
         catch (Exception e)
         {
             logger.log(Level.SEVERE, "Could not bind socket!", e);
             return;
         }
-        
+
         running = true;
-        
+
         final Node n = this;
-        handshake = new Thread(new Runnable()
-        {
+        handshake = new Thread(new Runnable() {
             @Override
             public void run()
             {
@@ -108,7 +109,8 @@ public class Node
                     try
                     {
                         Connection c = new Connection(n, socket.accept());
-                        logger.info("Accepted connection from Node " + c.getHostName() + "!");
+                        logger.info("Accepted connection from Node "
+                            + c.getHostName() + "!");
                         c.setConnectionStatus(Connection.CONNECTION_PEER_ONLY);
                         peers.add(c);
                         c.connect();
@@ -117,34 +119,40 @@ public class Node
                     {
                         if (running)
                         {
-                            logger.log(Level.WARNING, "Could not accept Node to socket", e);
+                            logger.log(
+                                Level.WARNING,
+                                "Could not accept Node to socket",
+                                e);
                         }
                     }
-                    
+
                 }
             }
         }, "Node Handshake");
         handshake.start();
-        
+
         logger.info("Node started!");
-        
+
         logger.info("Connecting to known peers...");
-        
+
         for (String peer : peerList)
         {
             try
             {
-                connect(InetAddress.getByName(peer.split(":")[0]), Integer.parseInt(peer.split(":")[1]));
+                connect(
+                    InetAddress.getByName(peer.split(":")[0]),
+                    Integer.parseInt(peer.split(":")[1]));
             }
             catch (Exception e)
             {
                 //
             }
         }
-        
+
         logger.info("Connected to " + peers.size() + " known peers!");
     }
-    
+
+
     /**
      * Stops the Node
      */
@@ -154,7 +162,7 @@ public class Node
         {
             logger.info("Stopping Node...");
             running = false;
-            
+
             if (socket != null)
             {
                 try
@@ -175,25 +183,32 @@ public class Node
             logger.info("Node stopped!");
         }
     }
-    
+
+
     /**
      * Returns true if this node is running
+     * 
      * @return
      */
     public boolean isRunning()
     {
         return running;
     }
-    
+
+
     /**
      * Parses a packet received by a connection
-     * @param data Packet data received
-     * @param connection Connection received by
+     * 
+     * @param data
+     *            Packet data received
+     * @param connection
+     *            Connection received by
      */
     public void parse(byte[] data, Connection connection)
     {
-        logger.finest("Received 0x" + Packet.toHex(data[0]) + " packet from " + connection.getHostName());
-        switch(Packet.lookup(data[0]))
+        logger.finest("Received 0x" + Packet.toHex(data[0]) + " packet from "
+            + connection.getHostName());
+        switch (Packet.lookup(data[0]))
         {
             case PING:
             {
@@ -214,15 +229,19 @@ public class Node
             case VERSION:
             {
                 PacketVersion packet = new PacketVersion(data);
-                logger.finer("Received Version from " + connection.getHostName() + "! Validating...");
+                logger.finer("Received Version from "
+                    + connection.getHostName() + "! Validating...");
                 if (connection.getConnectionStatus() == Connection.CONNECTION_NODE_ONLY
-                        && validateVersion(packet.getVersion()))
+                    && validateVersion(packet.getVersion()))
                 {
-                    logger.finer("Version valid! Sending verack and completing handshake...");
+                    logger
+                        .finer("Version valid! Sending verack and completing handshake...");
                     connection.send(new PacketVerack());
                     connection.setConnectionStatus(Connection.CONNECTION_BOTH);
-                    logger.finer("Requesting block information from " + connection);
-                    connection.send(new PacketGetBlocks(blockChain.getTop().getHash()));
+                    logger.finer("Requesting block information from "
+                        + connection);
+                    connection.send(new PacketGetBlocks(blockChain.getTop()
+                        .getHash()));
                     logger.finer("Sending ballot information to " + connection);
                     PacketInv inv = new PacketInv();
                     for (int i = 0; ballots.size() > i; i++)
@@ -230,19 +249,22 @@ public class Node
                         inv.addInv(ballots.get(i));
                     }
                     connection.send(inv);
-                    logger.finer("Requesting address cache information from " + connection);
+                    logger.finer("Requesting address cache information from "
+                        + connection);
                     connection.send(new PacketGetAddr());
                 }
                 else if (connection.getConnectionStatus() == Connection.CONNECTION_PEER_ONLY
-                        && validateVersion(packet.getVersion()))
+                    && validateVersion(packet.getVersion()))
                 {
-                    logger.finer("Version valid! Sending version information...");
+                    logger
+                        .finer("Version valid! Sending version information...");
                     connection.setPort(packet.getPort());
                     connection.send(new PacketVersion(VERSION, port));
                 }
                 else
                 {
-                    logger.finer("Could not validate version! Aborting connection...");
+                    logger
+                        .finer("Could not validate version! Aborting connection...");
                     removeConnection(connection);
                 }
                 return;
@@ -253,8 +275,10 @@ public class Node
                 {
                     logger.finer("Received verack! Completing handshake...");
                     connection.setConnectionStatus(Connection.CONNECTION_BOTH);
-                    logger.finer("Requesting block information from " + connection);
-                    connection.send(new PacketGetBlocks(blockChain.getTop().getHash()));
+                    logger.finer("Requesting block information from "
+                        + connection);
+                    connection.send(new PacketGetBlocks(blockChain.getTop()
+                        .getHash()));
                     logger.finer("Sending ballot information to " + connection);
                     PacketInv inv = new PacketInv();
                     for (int i = 0; ballots.size() > i; i++)
@@ -262,27 +286,33 @@ public class Node
                         inv.addInv(ballots.get(i));
                     }
                     connection.send(inv);
-                    logger.finer("Requesting address cache information from " + connection);
+                    logger.finer("Requesting address cache information from "
+                        + connection);
                     connection.send(new PacketGetAddr());
                 }
                 return;
             }
             case GETADDR:
             {
-                logger.finer("Request for address cache information from " + connection);
+                logger.finer("Request for address cache information from "
+                    + connection);
                 connection.send(new PacketAddr(this.getPeers()));
                 return;
             }
             case ADDR:
             {
                 PacketAddr packet = new PacketAddr(data);
-                logger.info("Received address cache information from " + connection + ". Bootstrapping...");
+                logger.info("Received address cache information from "
+                    + connection + ". Bootstrapping...");
                 for (String s : packet.getPeers())
                 {
                     try
                     {
                         logger.log(Level.FINE, "Connecting to " + s);
-                        connect(InetAddress.getByName(s.substring(1, s.indexOf(':'))), Integer.parseInt(s.substring(s.indexOf(':') + 1)));
+                        connect(InetAddress.getByName(s.substring(
+                            1,
+                            s.indexOf(':'))), Integer.parseInt(s.substring(s
+                            .indexOf(':') + 1)));
                     }
                     catch (Exception e)
                     {
@@ -306,7 +336,8 @@ public class Node
                         boolean b = true;
                         for (int v = 0; ballots.size() > v; v++)
                         {
-                            if (ballots.get(v).getRoot().equals(packet.getHash(i)))
+                            if (ballots.get(v).getRoot()
+                                .equals(packet.getHash(i)))
                             {
                                 b = false;
                                 break;
@@ -314,9 +345,12 @@ public class Node
                         }
                         if (b)
                         {
-                            logger.finer("New resource " + packet.getHash(i) + "(" + packet.getType(i) + ")! Requesting data...");
+                            logger.finer("New resource " + packet.getHash(i)
+                                + "(" + packet.getType(i)
+                                + ")! Requesting data...");
                             dataRequests.add(packet.getHash(i));
-                            getData.addInv(packet.getType(i), packet.getHash(i));
+                            getData
+                                .addInv(packet.getType(i), packet.getHash(i));
                         }
                     }
                     else if (packet.getType(i) == PacketInv.VECTOR_BLOCK)
@@ -327,9 +361,12 @@ public class Node
                         }
                         if (!blockChain.contains(packet.getHash(i)))
                         {
-                            logger.finer("New resource " + packet.getHash(i) + "(" + packet.getType(i) + ")! Requesting data...");
+                            logger.finer("New resource " + packet.getHash(i)
+                                + "(" + packet.getType(i)
+                                + ")! Requesting data...");
                             dataRequests.add(packet.getHash(i));
-                            getData.addInv(packet.getType(i), packet.getHash(i));
+                            getData
+                                .addInv(packet.getType(i), packet.getHash(i));
                         }
                     }
                 }
@@ -342,7 +379,9 @@ public class Node
             case NOTFOUND:
             {
                 PacketNotFound packet = new PacketNotFound(data);
-                logger.finer("Received notice that resource " + packet.getHash() + "(" + packet.getType() + ") could not be found.");
+                logger.finer("Received notice that resource "
+                    + packet.getHash() + "(" + packet.getType()
+                    + ") could not be found.");
                 return;
             }
             case GETDATA:
@@ -355,31 +394,44 @@ public class Node
                         boolean b = false;
                         for (int v = 0; ballots.size() > v; v++)
                         {
-                            if (ballots.get(v).getRoot().equalsIgnoreCase(packet.getHash(i)))
+                            if (ballots.get(v).getRoot()
+                                .equalsIgnoreCase(packet.getHash(i)))
                             {
                                 b = true;
-                                logger.finer("Request for resource " + packet.getHash(i) + "(" + packet.getType(i) + ")! Sending data...");
-                                connection.send(new PacketBallot(ballots.get(v)));
+                                logger.finer("Request for resource "
+                                    + packet.getHash(i) + "("
+                                    + packet.getType(i) + ")! Sending data...");
+                                connection
+                                    .send(new PacketBallot(ballots.get(v)));
                                 break;
                             }
                         }
                         if (!b)
                         {
-                            logger.finer("Request for resource " + packet.getHash(i) + "(" + packet.getType(i) + ")! Could not be found! Sending reply...");
-                            connection.send(new PacketNotFound(packet.getType(i), packet.getHash(i)));
+                            logger.finer("Request for resource "
+                                + packet.getHash(i) + "(" + packet.getType(i)
+                                + ")! Could not be found! Sending reply...");
+                            connection.send(new PacketNotFound(packet
+                                .getType(i), packet.getHash(i)));
                         }
                     }
                     else if (packet.getType(i) == PacketInv.VECTOR_BLOCK)
                     {
                         if (blockChain.contains(packet.getHash(i)))
                         {
-                            logger.finer("Request for resource " + packet.getHash(i) + "(" + packet.getType(i) + ")! Sending data...");
-                            connection.send(new PacketBlock(blockChain.get(packet.getHash(i))));
+                            logger.finer("Request for resource "
+                                + packet.getHash(i) + "(" + packet.getType(i)
+                                + ")! Sending data...");
+                            connection.send(new PacketBlock(blockChain
+                                .get(packet.getHash(i))));
                         }
                         else
                         {
-                            logger.finer("Request for resource " + packet.getHash(i) + "(" + packet.getType(i) + ")! Could not be found! Sending reply...");
-                            connection.send(new PacketNotFound(packet.getType(i), packet.getHash(i)));
+                            logger.finer("Request for resource "
+                                + packet.getHash(i) + "(" + packet.getType(i)
+                                + ")! Could not be found! Sending reply...");
+                            connection.send(new PacketNotFound(packet
+                                .getType(i), packet.getHash(i)));
                         }
                     }
                 }
@@ -388,21 +440,22 @@ public class Node
             case BALLOT:
             {
                 PacketBallot packet = new PacketBallot(data);
-                logger.info("Received ballot " + packet.getBallot().getRoot() + "!");
+                logger.info("Received ballot " + packet.getBallot().getRoot()
+                    + "!");
                 final Ballot b = packet.getBallot();
-                new Thread(new Runnable()
-                {
+                new Thread(new Runnable() {
                     @Override
                     public void run()
                     {
-                        //TODO
+                        // TODO
                         if (!dataRequests.remove(b.getRoot()))
                         {
                             return;
                         }
                         for (int i = 0; ballots.size() > i; i++)
                         {
-                            if (ballots.get(i).getRoot().equalsIgnoreCase(b.getRoot()))
+                            if (ballots.get(i).getRoot()
+                                .equalsIgnoreCase(b.getRoot()))
                             {
                                 return;
                             }
@@ -418,14 +471,14 @@ public class Node
             case BLOCK:
             {
                 PacketBlock packet = new PacketBlock(data);
-                logger.info("Received block " + packet.getBlock().getHash() + "!");
+                logger.info("Received block " + packet.getBlock().getHash()
+                    + "!");
                 final Block b = packet.getBlock();
-                new Thread(new Runnable()
-                {
+                new Thread(new Runnable() {
                     @Override
                     public void run()
                     {
-                        //TODO
+                        // TODO
                         if (!dataRequests.remove(b.getHash()))
                         {
                             return;
@@ -451,7 +504,8 @@ public class Node
                     PacketInv inv = new PacketInv();
                     inv.addInv(root.getBlock());
                     ArrayList<Block> blocks = new ArrayList<Block>();
-                    BlockChain.Node top = blockChain.getNode(blockChain.getTop().getHash());
+                    BlockChain.Node top =
+                        blockChain.getNode(blockChain.getTop().getHash());
                     while (top != root)
                     {
                         blocks.add(top.getBlock());
@@ -465,31 +519,37 @@ public class Node
                 }
                 return;
             }
-            default: logger.finest("Could not parse invalid packet.");
+            default:
+                logger.finest("Could not parse invalid packet.");
         }
     }
-    
+
+
     /**
      * Connects this node to another
+     * 
      * @param address
      * @param port
      * @return Returns connection if the connection was successful
      */
     public Connection connect(InetAddress address, int port)
     {
-        if (ip.equals(address) && port == this.port
-                || getConnection("/" + address.getHostAddress() + ":" + port) != null)
+        if (ip.equals(address)
+            && port == this.port
+            || getConnection("/" + address.getHostAddress() + ":" + port) != null)
         {
-            logger.finer("Duplicate connection /" + address.getHostAddress() + ":" + port + "!");
+            logger.finer("Duplicate connection /" + address.getHostAddress()
+                + ":" + port + "!");
             return null;
         }
-        
+
         try
         {
             Connection c = new Connection(this, new Socket(address, port));
             if (c.getSocket().isConnected())
             {
-                logger.info("Connected to Node " + c.getHostName() + "! Sending version information...");
+                logger.info("Connected to Node " + c.getHostName()
+                    + "! Sending version information...");
                 c.setConnectionStatus(Connection.CONNECTION_NODE_ONLY);
                 c.connect();
                 c.send(new PacketVersion(VERSION, this.port));
@@ -498,7 +558,9 @@ public class Node
             }
             else
             {
-                logger.log(Level.FINE, "Could not connect to Node " + c.getHostName() + "!");
+                logger.log(
+                    Level.FINE,
+                    "Could not connect to Node " + c.getHostName() + "!");
             }
         }
         catch (Exception e)
@@ -507,10 +569,13 @@ public class Node
         }
         return null;
     }
-    
+
+
     /**
      * Removes a connection from the node
-     * @param c Connection to remove
+     * 
+     * @param c
+     *            Connection to remove
      */
     public void removeConnection(Connection c)
     {
@@ -523,9 +588,11 @@ public class Node
             peers.remove(c);
         }
     }
-    
+
+
     /**
      * Returns the connection with the specified name
+     * 
      * @param hostname
      * @return
      */
@@ -533,16 +600,19 @@ public class Node
     {
         for (int i = 0; peers.size() > i; i++)
         {
-            if (peers.get(i).getHostName().equals(hostname) || peers.get(i).getName().equals(hostname))
+            if (peers.get(i).getHostName().equals(hostname)
+                || peers.get(i).getName().equals(hostname))
             {
                 return peers.get(i);
             }
         }
         return null;
     }
-    
+
+
     /**
      * Sends the specified packet to all peers
+     * 
      * @param p
      */
     public void sendToAll(Packet p)
@@ -552,16 +622,19 @@ public class Node
             peers.get(i).send(p);
         }
     }
-    
+
+
     /**
      * Returns a list of this node's peers
+     * 
      * @return
      */
     public ArrayList<Connection> getPeers()
     {
         return peers;
     }
-    
+
+
     /**
      * Attempts to generate a block from the known ballots
      */
@@ -571,8 +644,7 @@ public class Node
         {
             return;
         }
-        blockGen = new Thread(new Runnable()
-        {
+        blockGen = new Thread(new Runnable() {
             @Override
             public void run()
             {
@@ -590,9 +662,12 @@ public class Node
                 }
                 long time = System.currentTimeMillis();
                 blockGenHash = blockChain.getTop().getHash();
-                Block b = new Block(blockGenHash, Block.MAXIMUM_TARGET, tempBallot);
+                Block b =
+                    new Block(blockGenHash, Block.MAXIMUM_TARGET, tempBallot);
                 b.genProof();
-                logger.info("Generated Block in " + ((System.currentTimeMillis() - time) / 1000) + " seconds!\n" + b.toString());
+                logger.info("Generated Block in "
+                    + ((System.currentTimeMillis() - time) / 1000)
+                    + " seconds!\n" + b.toString());
                 logger.info("Adding block to BlockChain...");
                 blockChain.append(b);
                 PacketInv inv = new PacketInv();
@@ -605,10 +680,11 @@ public class Node
         }, "Block Generation");
         blockGen.start();
     }
-    
+
+
     private static boolean validateVersion(Version v)
     {
         return VERSION.isEqualTo(v);
     }
-    
+
 }

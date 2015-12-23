@@ -2,21 +2,23 @@ package me.edwards.des.net.packet;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-
 import me.edwards.des.net.packet.PacketInv.InvVector;
 import me.edwards.des.util.ByteUtil;
 import me.edwards.des.util.HashUtil;
 
 /**
  * Get Data Packet<br>
- * This packet is sent to request a particular piece of data
- * Created on: Nov 3, 2015 at 10:06:19 AM
+ * This packet is sent to request a particular piece of data Created on: Nov 3,
+ * 2015 at 10:06:19 AM
+ * 
  * @author Matthew Edwards
  */
-public class PacketGetData extends Packet
+public class PacketGetData
+    extends Packet
 {
     private ArrayList<InvVector> vectors;
-    
+
+
     /**
      * Creates new PacketGetData
      */
@@ -25,10 +27,13 @@ public class PacketGetData extends Packet
         super(PacketTypes.GETDATA.getID());
         this.vectors = new ArrayList<InvVector>();
     }
-    
+
+
     /**
      * Creates new PacketGetData
-     * @param binary Packet binary data
+     * 
+     * @param binary
+     *            Packet binary data
      */
     public PacketGetData(byte[] binary)
     {
@@ -46,18 +51,22 @@ public class PacketGetData extends Packet
             vectors.add(v);
         }
     }
-    
+
+
     /**
      * Returns the number of vectors in this Inv
+     * 
      * @return
      */
     public int getSize()
     {
         return vectors.size();
     }
-    
+
+
     /**
      * Returns the type of the vector at the specified index
+     * 
      * @param index
      * @return
      */
@@ -65,9 +74,11 @@ public class PacketGetData extends Packet
     {
         return vectors.get(index).type;
     }
-    
+
+
     /**
      * Returns the hash of the vector at the specified index
+     * 
      * @param index
      * @return
      */
@@ -75,11 +86,15 @@ public class PacketGetData extends Packet
     {
         return ByteUtil.bytesToHex(vectors.get(index).hash);
     }
-    
+
+
     /**
      * Adds an object to this packet
-     * @param type Type of data
-     * @param hash Data hash
+     * 
+     * @param type
+     *            Type of data
+     * @param hash
+     *            Data hash
      */
     public void addInv(int type, String hash)
     {
@@ -88,6 +103,7 @@ public class PacketGetData extends Packet
         vector.hash = ByteUtil.hexToBytes(HashUtil.generateLeadingZeros(hash));
         vectors.add(vector);
     }
+
 
     @Override
     public byte[] getBinary()

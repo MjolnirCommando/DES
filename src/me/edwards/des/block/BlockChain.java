@@ -6,17 +6,20 @@ import java.util.ArrayList;
 /**
  * Data structure to maintain the entire (or a section of the) block chain
  * Created on: Nov 2, 2015 at 2:23:14 PM
+ * 
  * @author Matthew Edwards
  */
 public class BlockChain
 {
-    private Node top;
+    private Node             top;
     private ArrayList<Block> queue;
-    private ArrayList<Node> topList;
-    
+    private ArrayList<Node>  topList;
+
+
     /**
      * Creates new BlockChain from the genesis block
-     * @param genesis 
+     * 
+     * @param genesis
      */
     public BlockChain(Block genesis)
     {
@@ -27,10 +30,12 @@ public class BlockChain
         this.topList = new ArrayList<Node>();
         this.topList.add(top);
     }
-    
+
+
     /**
      * Creates new BlockChain from binary data
-     * @param size 
+     * 
+     * @param size
      * @param binary
      */
     public BlockChain(int size, byte[][] binary)
@@ -64,9 +69,11 @@ public class BlockChain
         }
         this.topList.add(this.top);
     }
-    
+
+
     /**
      * Returns this BlockChain in binary format
+     * 
      * @return
      */
     public byte[][] getBytes()
@@ -79,11 +86,12 @@ public class BlockChain
             length += 4 + n.block.getBytes().length;
             n = top.parent;
         }
-        byte[][] bytes = new byte[(int) Math.ceil((double) length / MAX_SIZE)][];
+        byte[][] bytes = new byte[(int)Math.ceil((double)length / MAX_SIZE)][];
         n = top;
         for (int i = 0; bytes.length > i; i++)
         {
-            ByteBuffer data = ByteBuffer.allocate((int) Math.min(length, MAX_SIZE));
+            ByteBuffer data =
+                ByteBuffer.allocate((int)Math.min(length, MAX_SIZE));
             for (int j = 0; getSize() > j; j++)
             {
                 if (n.block.getBytes().length + data.position() > data.limit())
@@ -102,38 +110,45 @@ public class BlockChain
         }
         return bytes;
     }
-    
+
+
     /**
      * Returns the block on the top of the BlockChain
+     * 
      * @return
      */
     public Block getTop()
     {
         return top.block;
     }
-    
+
+
     /**
      * Returns the number of nodes in this BlockChain
+     * 
      * @return
      */
     public int getSize()
     {
         return top.height + 1;
     }
-    
+
+
     /**
      * Queues the specified block to be added to this BlockChain
+     * 
      * @param block
      */
     public void append(Block block)
     {
         queue.add(0, block);
-        
+
         for (int i = 0; queue.size() > i; i++)
         {
             for (int j = 0; topList.size() > j; j++)
             {
-                if (topList.get(j).getBlock().getHash().equalsIgnoreCase(queue.get(i).getPrevHash()))
+                if (topList.get(j).getBlock().getHash()
+                    .equalsIgnoreCase(queue.get(i).getPrevHash()))
                 {
                     Node n = new Node();
                     n.parent = topList.get(j);
@@ -155,7 +170,8 @@ public class BlockChain
                     int height = n.height;
                     while (n.height >= 0 && height - n.height < 10)
                     {
-                        if (n.block.getHash().equalsIgnoreCase(queue.get(i).getPrevHash()))
+                        if (n.block.getHash().equalsIgnoreCase(
+                            queue.get(i).getPrevHash()))
                         {
                             conNode = n;
                         }
@@ -182,7 +198,7 @@ public class BlockChain
                 }
             }
         }
-        
+
         Node temp = top;
         for (int i = 0; topList.size() > i; i++)
         {
@@ -199,9 +215,11 @@ public class BlockChain
         }
         top = temp;
     }
-    
+
+
     /**
      * Returns true if the specified hash belongs to a block in this BlockChain
+     * 
      * @param hash
      * @return
      */
@@ -225,9 +243,11 @@ public class BlockChain
         }
         return false;
     }
-    
+
+
     /**
      * Returns the Block in this BlockChain with the specified hash
+     * 
      * @param hash
      * @return
      */
@@ -251,9 +271,12 @@ public class BlockChain
         }
         return null;
     }
-    
+
+
     /**
-     * Returns the node in this BlockChain containing the Block with the specified hash
+     * Returns the node in this BlockChain containing the Block with the
+     * specified hash
+     * 
      * @param hash
      * @return
      */
@@ -277,7 +300,8 @@ public class BlockChain
         }
         return null;
     }
-    
+
+
     @Override
     public String toString()
     {
@@ -304,38 +328,46 @@ public class BlockChain
         sb.append("\t" + n.getBlock().getHash() + "\n");
         return sb.toString();
     }
-    
+
+
     /**
-     * Represents a node in the BlockChain
-     * Created on: Dec 21, 2015 at 5:20:30 PM
+     * Represents a node in the BlockChain Created on: Dec 21, 2015 at 5:20:30
+     * PM
+     * 
      * @author Matthew Edwards
      */
     public class Node
     {
-        private Node parent;
-        private int height;
+        private Node  parent;
+        private int   height;
         private Block block;
-        
+
+
         /**
          * Returns the parent node
+         * 
          * @return
          */
         public Node getParent()
         {
             return parent;
         }
-        
+
+
         /**
          * Returns the height of this node in the BlockChain
+         * 
          * @return
          */
         public int getHeight()
         {
             return height;
         }
-        
+
+
         /**
          * Returns the Block contained in this node
+         * 
          * @return
          */
         public Block getBlock()

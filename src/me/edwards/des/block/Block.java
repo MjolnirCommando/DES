@@ -5,13 +5,13 @@ import java.nio.ByteBuffer;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-
 import me.edwards.des.util.ByteUtil;
 import me.edwards.des.util.HashUtil;
 
 /**
- * Data Structure containing information for a block
- * Created on: Nov 1, 2015 at 3:09:17 PM
+ * Data Structure containing information for a block Created on: Nov 1, 2015 at
+ * 3:09:17 PM
+ * 
  * @author Matthew Edwards
  */
 public class Block
@@ -19,27 +19,34 @@ public class Block
     /**
      * Maximum Target value for DES
      */
-    public static final int MAXIMUM_TARGET = ByteUtil.bytesToInt(new byte[] {(byte) 0x1f, (byte) 0xFf, (byte) 0xff, (byte) 0xff});//ByteUtil.bytesToInt(new byte[] {(byte) 0x1d, (byte) 0xF0, (byte) 0x00, (byte) 0x00});
-    
-    private final int VERSION = 1;
-    private int version;
-    private String prevBlockHash;
-    private String merkleRootHash;
-    private int time;
-    private int target;
-    private int nonce;
+    public static final int   MAXIMUM_TARGET = ByteUtil.bytesToInt(new byte[] {
+        (byte)0x1f, (byte)0xFf, (byte)0xff, (byte)0xff }); // ByteUtil.bytesToInt(new
+// byte[] {(byte) 0x1d, (byte) 0xF0, (byte) 0x00, (byte) 0x00});
+
+    private final int         VERSION        = 1;
+    private int               version;
+    private String            prevBlockHash;
+    private String            merkleRootHash;
+    private int               time;
+    private int               target;
+    private int               nonce;
     private ArrayList<Ballot> ballots;
-    
-    private byte[] headerBytes;
-    private byte[] myBytes;
-    private String myHash;
-    private boolean valid;
-    
+
+    private byte[]            headerBytes;
+    private byte[]            myBytes;
+    private String            myHash;
+    private boolean           valid;
+
+
     /**
      * Creates new Block
-     * @param prevBlockHash 256-bit hash of the previous block in the chain
-     * @param target Short-Version target for hashes
-     * @param ballots A list of votes to be included in this block
+     * 
+     * @param prevBlockHash
+     *            256-bit hash of the previous block in the chain
+     * @param target
+     *            Short-Version target for hashes
+     * @param ballots
+     *            A list of votes to be included in this block
      */
     public Block(String prevBlockHash, int target, ArrayList<Ballot> ballots)
     {
@@ -52,10 +59,13 @@ public class Block
         this.valid = false;
         this.myBytes = null;
     }
-    
+
+
     /**
      * Creates new Block from binary data
-     * @param binary Binary data
+     * 
+     * @param binary
+     *            Binary data
      */
     public Block(byte[] binary)
     {
@@ -80,28 +90,36 @@ public class Block
             ballots.add(new Ballot(bytes));
         }
         genBytes();
-        this.myHash = HashUtil.generateLeadingZeros(HashUtil.generateBlockHash(headerBytes, nonce));
+        this.myHash =
+            HashUtil.generateLeadingZeros(HashUtil.generateBlockHash(
+                headerBytes,
+                nonce));
         validate();
     }
-    
+
+
     /**
      * Returns the hash for this block
+     * 
      * @return
      */
     public String getHash()
     {
         return myHash;
     }
-    
+
+
     /**
      * Returns the hash for this block's parent
+     * 
      * @return
      */
     public String getPrevHash()
     {
         return prevBlockHash;
     }
-    
+
+
     /**
      * Generates a proof for this block and validates its information.
      */
@@ -111,14 +129,19 @@ public class Block
         {
             return;
         }
-        this.time = (int) (System.currentTimeMillis() / 60000);
-        this.merkleRootHash = HashUtil.generateLeadingZeros(getMerkleRoot(0, 0));
+        this.time = (int)(System.currentTimeMillis() / 60000);
+        this.merkleRootHash =
+            HashUtil.generateLeadingZeros(getMerkleRoot(0, 0));
         genBytes();
         this.nonce = HashUtil.generateProof(headerBytes, target);
-        this.myHash = HashUtil.generateLeadingZeros(HashUtil.generateBlockHash(headerBytes, nonce));
+        this.myHash =
+            HashUtil.generateLeadingZeros(HashUtil.generateBlockHash(
+                headerBytes,
+                nonce));
         this.valid = true;
     }
-    
+
+
     private String getMerkleRoot(int depth, int position)
     {
         if (depth < Math.log(ballots.size()) / Math.log(2))
@@ -129,7 +152,9 @@ public class Block
             {
                 return null;
             }
-            return HashUtil.generateMerkleRoot(root1, root2 == null ? root1 : root2);
+            return HashUtil.generateMerkleRoot(root1, root2 == null
+                ? root1
+                : root2);
         }
         else
         {
@@ -140,21 +165,26 @@ public class Block
             return ballots.get(position).getRoot();
         }
     }
-    
+
+
     private void genBytes()
     {
         ByteBuffer bytes = ByteBuffer.allocate(4 + 32 + 32 + 4 + 4 + 4);
         bytes.putInt(version);
-        bytes.put(ByteUtil.hexToBytes(HashUtil.generateLeadingZeros(prevBlockHash)));
-        bytes.put(ByteUtil.hexToBytes(HashUtil.generateLeadingZeros(merkleRootHash)));
+        bytes.put(ByteUtil.hexToBytes(HashUtil
+            .generateLeadingZeros(prevBlockHash)));
+        bytes.put(ByteUtil.hexToBytes(HashUtil
+            .generateLeadingZeros(merkleRootHash)));
         bytes.putInt(time);
         bytes.putInt(target);
         bytes.putInt(ballots.size());
         headerBytes = bytes.array();
     }
-    
+
+
     /**
      * Returns the byte data of this Block
+     * 
      * @return
      */
     public byte[] getBytes()
@@ -166,10 +196,13 @@ public class Block
             {
                 size += 4 + ballots.get(i).getBytes().length;
             }
-            ByteBuffer data = ByteBuffer.allocate(4 + 32 + 32 + 4 + 4 + 4 + 4 + size);
+            ByteBuffer data =
+                ByteBuffer.allocate(4 + 32 + 32 + 4 + 4 + 4 + 4 + size);
             data.putInt(version);
-            data.put(ByteUtil.hexToBytes(HashUtil.generateLeadingZeros(prevBlockHash)));
-            data.put(ByteUtil.hexToBytes(HashUtil.generateLeadingZeros(merkleRootHash)));
+            data.put(ByteUtil.hexToBytes(HashUtil
+                .generateLeadingZeros(prevBlockHash)));
+            data.put(ByteUtil.hexToBytes(HashUtil
+                .generateLeadingZeros(merkleRootHash)));
             data.putInt(time);
             data.putInt(target);
             data.putInt(ballots.size());
@@ -184,9 +217,11 @@ public class Block
         }
         return myBytes;
     }
-    
+
+
     /**
      * Returns true if this Block is valid
+     * 
      * @return
      */
     public boolean validate()
@@ -194,25 +229,32 @@ public class Block
         valid = HashUtil.validateProof(headerBytes, nonce, target);
         return valid;
     }
-    
+
+
     @Override
     public String toString()
     {
-        String tar = HashUtil.generateLeadingZeros(ByteUtil.bytesToHex(ByteUtil.intToBytes(target)), 8);
-        return "---- BLOCK V" + version + " @ "
-                + DateFormat.getDateTimeInstance().format(new Date(((long) (time)) * 60000)) + " "
-                + (validate() ? "[VALID]" : "[INVALID]") + "\n"
-                + "Hash:       " + myHash + "\n"
-                + "PrevHash:   " + prevBlockHash + "\n"
-                + "MerkleRoot: " + merkleRootHash + "\n"
-                + "Target:     " + tar + "   Difficulty: " + getDifficulty(target) + "\n"
-                + "Ballots:    " + ballots.size() + "\n"
-                + "Nonce:      " + nonce + "\n"
-                + "-------------------------------------------";
+        String tar =
+            HashUtil.generateLeadingZeros(
+                ByteUtil.bytesToHex(ByteUtil.intToBytes(target)),
+                8);
+        return "---- BLOCK V"
+            + version
+            + " @ "
+            + DateFormat.getDateTimeInstance().format(
+                new Date(((long)(time)) * 60000)) + " "
+            + (validate() ? "[VALID]" : "[INVALID]") + "\n" + "Hash:       "
+            + myHash + "\n" + "PrevHash:   " + prevBlockHash + "\n"
+            + "MerkleRoot: " + merkleRootHash + "\n" + "Target:     " + tar
+            + "   Difficulty: " + getDifficulty(target) + "\n" + "Ballots:    "
+            + ballots.size() + "\n" + "Nonce:      " + nonce + "\n"
+            + "-------------------------------------------";
     }
-    
+
+
     /**
      * Returns the target as a BigInteger
+     * 
      * @param target
      * @return
      */
@@ -222,11 +264,14 @@ public class Block
         byte e = bytes[0];
         bytes[0] = 0;
         int i = ByteUtil.bytesToInt(bytes);
-        return new BigInteger("2").pow(8 * (e - 3)).multiply(new BigInteger(i + ""));
+        return new BigInteger("2").pow(8 * (e - 3)).multiply(
+            new BigInteger(i + ""));
     }
-    
+
+
     /**
      * Returns the difficulty of the specified target
+     * 
      * @param target
      * @return
      */
@@ -240,7 +285,7 @@ public class Block
         targetBytes[0] = 0;
         double max = ByteUtil.bytesToInt(maxBytes);
         double tar = ByteUtil.bytesToInt(targetBytes);
-        
+
         return max / tar * Math.pow(2, 8 * ((maxE - 3) - (tarE - 3)));
     }
 }

@@ -1,25 +1,29 @@
 package me.edwards.des.net.packet;
 
 import java.nio.ByteBuffer;
-
 import me.edwards.des.util.Version;
 
 /**
  * Version Packet<br>
  * This is used in the handshake protocol for the DES system and contains
- * version, block count, and time.
- * Created on: Oct 17, 2015 at 9:12:01 AM
+ * version, block count, and time. Created on: Oct 17, 2015 at 9:12:01 AM
+ * 
  * @author Matthew Edwards
  */
-public class PacketVersion extends Packet
+public class PacketVersion
+    extends Packet
 {
     private Version version;
-    private int port;
-    
+    private int     port;
+
+
     /**
      * Creates new PacketVersion
-     * @param version Node DES Version
-     * @param port Node port
+     * 
+     * @param version
+     *            Node DES Version
+     * @param port
+     *            Node port
      */
     public PacketVersion(Version version, int port)
     {
@@ -27,10 +31,13 @@ public class PacketVersion extends Packet
         this.version = version;
         this.port = port;
     }
-    
+
+
     /**
      * Creates new PacketVersion from binary data
-     * @param binary Packet binary data
+     * 
+     * @param binary
+     *            Packet binary data
      */
     public PacketVersion(byte[] binary)
     {
@@ -43,24 +50,29 @@ public class PacketVersion extends Packet
         version = new Version(new String(temp));
         port = data.getInt();
     }
-    
+
+
     /**
      * Returns the Version of the sender Node
+     * 
      * @return
      */
     public Version getVersion()
     {
         return version;
     }
-    
+
+
     /**
      * Return the sender Node's port
+     * 
      * @return
      */
     public int getPort()
     {
         return port;
     }
+
 
     @Override
     public byte[] getBinary()

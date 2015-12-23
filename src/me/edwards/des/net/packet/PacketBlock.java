@@ -1,21 +1,24 @@
 package me.edwards.des.net.packet;
 
 import java.nio.ByteBuffer;
-
 import me.edwards.des.block.Block;
 
 /**
  * Block Packet<br>
- * This packet is used to transfer block data between nodes.
- * Created on: Nov 3, 2015 at 10:28:29 AM
+ * This packet is used to transfer block data between nodes. Created on: Nov 3,
+ * 2015 at 10:28:29 AM
+ * 
  * @author Matthew Edwards
  */
-public class PacketBlock extends Packet
+public class PacketBlock
+    extends Packet
 {
     private Block block;
-    
+
+
     /**
      * Creates new PacketBlock
+     * 
      * @param block
      */
     public PacketBlock(Block block)
@@ -23,10 +26,13 @@ public class PacketBlock extends Packet
         super(PacketTypes.BLOCK.getID());
         this.block = block;
     }
-    
+
+
     /**
      * Creates new PacketBlock
-     * @param binary Packet binary data
+     * 
+     * @param binary
+     *            Packet binary data
      */
     public PacketBlock(byte[] binary)
     {
@@ -38,15 +44,18 @@ public class PacketBlock extends Packet
         data.get(bytes, 0, size - 5);
         this.block = new Block(bytes);
     }
-    
+
+
     /**
      * Returns the block transferred by this packet
+     * 
      * @return
      */
     public Block getBlock()
     {
         return block;
     }
+
 
     @Override
     public byte[] getBinary()

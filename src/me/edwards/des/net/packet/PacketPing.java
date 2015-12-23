@@ -4,27 +4,35 @@ import java.nio.ByteBuffer;
 
 /**
  * Ping Packet<br>
- * This packet is sent to request a response from its target node.
- * Created on: Oct 17, 2015 at 9:12:01 AM
+ * This packet is sent to request a response from its target node. Created on:
+ * Oct 17, 2015 at 9:12:01 AM
+ * 
  * @author Matthew Edwards
  */
-public class PacketPing extends Packet
+public class PacketPing
+    extends Packet
 {
     private long ping;
-    
+
+
     /**
      * Creates new PacketPing
-     * @param ping Nonce for checking pong
+     * 
+     * @param ping
+     *            Nonce for checking pong
      */
     public PacketPing(long ping)
     {
         super(PacketTypes.PING.getID());
         this.ping = ping;
     }
-    
+
+
     /**
      * Creates new PacketPing from binary data
-     * @param binary Packet binary data
+     * 
+     * @param binary
+     *            Packet binary data
      */
     public PacketPing(byte[] binary)
     {
@@ -33,15 +41,18 @@ public class PacketPing extends Packet
         data.position(5);
         this.ping = data.getLong();
     }
-    
+
+
     /**
      * Returns the Nonce for checking pong
+     * 
      * @return
      */
     public long getPing()
     {
         return ping;
     }
+
 
     @Override
     public byte[] getBinary()

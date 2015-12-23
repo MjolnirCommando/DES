@@ -6,33 +6,41 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import me.edwards.des.block.Block;
 
 /**
  * Utility class for generating Hashes for the HashCash Proof of Work algorithm
  * Created on: Oct 16, 2015 at 5:30:31 PM
+ * 
  * @author Matthew Edwards
  */
 public class HashUtil
 {
     private static final Logger logger = Logger.getLogger("DES.hashutil");
-    private static int hashes = 0;
-    
+    private static int          hashes = 0;
+
+
     /**
-     * Generates a hash string with the correct number of leading zeros (64 digits by default)
-     * @param hash String to add leading zeros to
+     * Generates a hash string with the correct number of leading zeros (64
+     * digits by default)
+     * 
+     * @param hash
+     *            String to add leading zeros to
      * @return
      */
     public static String generateLeadingZeros(String hash)
     {
         return generateLeadingZeros(hash, 64);
     }
-    
+
+
     /**
      * Generates a hash string with the correct number of leading zeros
-     * @param hash String to add leading zeros to
-     * @param digits Number of digits to match
+     * 
+     * @param hash
+     *            String to add leading zeros to
+     * @param digits
+     *            Number of digits to match
      * @return
      */
     public static String generateLeadingZeros(String hash, int digits)
@@ -48,9 +56,11 @@ public class HashUtil
         }
         return output.toString();
     }
-    
+
+
     /**
      * Generates a block hash from a given block
+     * 
      * @param bytes
      * @param proof
      * @return
@@ -74,9 +84,11 @@ public class HashUtil
         }
         return null;
     }
-    
+
+
     /**
      * Generates a hash from given data
+     * 
      * @param bytes
      * @return
      */
@@ -98,12 +110,17 @@ public class HashUtil
         }
         return null;
     }
-    
+
+
     /**
      * Validates a generated proof of work
-     * @param bytes The block in binary format
-     * @param proof Proof integer value
-     * @param target Number of valid zero bits
+     * 
+     * @param bytes
+     *            The block in binary format
+     * @param proof
+     *            Proof integer value
+     * @param target
+     *            Number of valid zero bits
      * @return True if the proof is valid
      */
     public static boolean validateProof(byte[] bytes, int proof, int target)
@@ -117,7 +134,9 @@ public class HashUtil
             byte[] digest = md.digest();
             md.reset();
             md.update(digest);
-            return validateDigest(new BigInteger(1, md.digest()), Block.getTarget(target));
+            return validateDigest(
+                new BigInteger(1, md.digest()),
+                Block.getTarget(target));
         }
         catch (NoSuchAlgorithmException e)
         {
@@ -125,11 +144,15 @@ public class HashUtil
         }
         return false;
     }
-    
+
+
     /**
      * Generates a proof of work
-     * @param bytes The block in binary format
-     * @param target Number of valid zeros
+     * 
+     * @param bytes
+     *            The block in binary format
+     * @param target
+     *            Number of valid zeros
      * @return Proof integer value (nonce to generate target hash)
      */
     public static int generateProof(byte[] bytes, int target)
@@ -143,7 +166,7 @@ public class HashUtil
             int nonce = rnd.nextInt();
             long time = System.currentTimeMillis();
             BigInteger tar = Block.getTarget(target);
-            while(!validateDigest(digest, tar))
+            while (!validateDigest(digest, tar))
             {
                 nonce++;
                 md.reset();
@@ -154,7 +177,8 @@ public class HashUtil
                 md.update(digestBytes);
                 digest = new BigInteger(1, md.digest());
             }
-            logger.fine("Proof generated in " + ((System.currentTimeMillis() - time) / 1000) + " seconds.");
+            logger.fine("Proof generated in "
+                + ((System.currentTimeMillis() - time) / 1000) + " seconds.");
             logger.fine("Nonce: " + nonce);
             logger.fine(generateLeadingZeros(digest.toString(16)));
             return nonce;
@@ -165,14 +189,17 @@ public class HashUtil
         }
         return 0;
     }
-    
+
+
     private static boolean validateDigest(BigInteger value, BigInteger target)
     {
         return value.compareTo(target) == -1;
     }
-    
+
+
     /**
      * Generates a merkle root based on two other roots
+     * 
      * @param root1
      * @param root2
      * @return
@@ -193,10 +220,13 @@ public class HashUtil
         }
         return null;
     }
-    
+
+
     /**
      * Returns the estimated time (in seconds) to generate a proof of work.
-     * @param difficulty Difficulty of block
+     * 
+     * @param difficulty
+     *            Difficulty of block
      * @return Time in seconds to generate a proof of work
      */
     public static int estimateTime(double difficulty)
@@ -224,7 +254,7 @@ public class HashUtil
                 logger.log(Level.SEVERE, "estimateTime", e);
             }
         }
-        return (int) (difficulty * Math.pow(2, 32) / hashes);
+        return (int)(difficulty * Math.pow(2, 32) / hashes);
     }
 
 }

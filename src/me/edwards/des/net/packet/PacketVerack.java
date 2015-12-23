@@ -5,11 +5,12 @@ import java.nio.ByteBuffer;
 /**
  * Version Acknowledge Packet<br>
  * This is used in the handshake protocol for the DES system and confirms that a
- * handshake is complete
- * Created on: Oct 17, 2015 at 9:12:01 AM
+ * handshake is complete Created on: Oct 17, 2015 at 9:12:01 AM
+ * 
  * @author Matthew Edwards
  */
-public class PacketVerack extends Packet
+public class PacketVerack
+    extends Packet
 {
     /**
      * Creates new PacketVerack
@@ -18,6 +19,7 @@ public class PacketVerack extends Packet
     {
         super(PacketTypes.VERACK.getID());
     }
+
 
     @Override
     public byte[] getBinary()
