@@ -1,3 +1,19 @@
+/*============================================================================*\
+ | Copyright (C) 2015 Matthew Edwards                                         |
+ |                                                                            |
+ | Licensed under the Apache License, Version 2.0 (the "License"); you may    |
+ | not use this file except in compliance with the License. You may obtain a  |
+ | copy of the License at                                                     |
+ |                                                                            |
+ |     http://www.apache.org/licenses/LICENSE-2.0                             |
+ |                                                                            |
+ | Unless required by applicable law or agreed to in writing, software        |
+ | distributed under the License is distributed on an "AS IS" BASIS,          |
+ | WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   |
+ | See the License for the specific language governing permissions and        |
+ | limitations under the License.                                             |
+\*============================================================================*/
+
 package me.edwards.des;
 
 import java.io.BufferedReader;
@@ -31,13 +47,22 @@ import me.edwards.des.util.ByteUtil;
 import me.edwards.des.util.HashUtil;
 
 /**
- * Handles launch of a single Node and its console input Created on: Dec 21,
- * 2015 at 10:11:56 AM
+ * Handles the Launch of a Node from the command line. This class loads all
+ * necessary logging configurations and initializes all loggers and working
+ * directories for a Decentralized Election System Miner Node. After a Node is
+ * successfully initialized, created, and launched, this class handles the
+ * console input for the Node.<br>
+ * <br>
+ * Created on: Dec 21, 2015 at 10:11:56 AM
  * 
+ * @see Launcher#main(String[])
  * @author Matthew Edwards
  */
 public class Launcher
 {
+    // ~ Static/instance variables .............................................
+
+    // -------------------------------------------------------------------------
     /**
      * The Global logger for DES (Used by Launcher and utilities)
      */
@@ -50,8 +75,46 @@ public class Launcher
                                           + "/Desktop/DES/";
 
 
+    // ~ Methods ...............................................................
+
+    // -------------------------------------------------------------------------
     /**
-     * Called on application launch
+     * This method is called on the application Launch.<br>
+     * <br>
+     * List of command line arguments:<br>
+     * <table>
+     * <thead style="font-weight:bold;">
+     * <td>Flag</td>
+     * <td>Usage</td>
+     * <td>Description</td> </thead>
+     * <tr>
+     * <td>-dir</td>
+     * <td>-dir &lt;Directory&gt;</td>
+     * <td>Sets the working directory of the Node.</td>
+     * </tr>
+     * <tr>
+     * <td>-gen</td>
+     * <td>-gen</td>
+     * <td>Generates a Genesis Block and saves it to
+     * "generated_blockchain.block" in the working directory.</td>
+     * </tr>
+     * <tr>
+     * <td>-name</td>
+     * <td>-name &lt;Name&gt;</td>
+     * <td>Sets the human-readable name of the Node.</td>
+     * </tr>
+     * <tr>
+     * <td>-peer</td>
+     * <td>-peer &lt;Peer&gt;</td>
+     * <td>Adds an initial peer to the Node which will be contacted during the
+     * Bootstrapping process.</td>
+     * </tr>
+     * <tr>
+     * <td>-port</td>
+     * <td>-port &lt;Port&gt;</td>
+     * <td>Sets the port to be used by the Node.</td>
+     * </tr>
+     * </table>
      * 
      * @param args
      */
@@ -303,98 +366,6 @@ public class Launcher
                         {
                             GLOBAL.info(c.toString());
                         }
-                    }
-                    else if (input[0].equalsIgnoreCase("testappend"))
-                    {
-                        Block a =
-                            new Block(
-                                "0",
-                                Block.MAXIMUM_TARGET,
-                                new ArrayList<Ballot>());
-                        a.genProof();
-                        Block b =
-                            new Block(
-                                a.getHash(),
-                                Block.MAXIMUM_TARGET,
-                                new ArrayList<Ballot>());
-                        b.genProof();
-                        Block c =
-                            new Block(
-                                b.getHash(),
-                                Block.MAXIMUM_TARGET,
-                                new ArrayList<Ballot>());
-                        c.genProof();
-                        Block d =
-                            new Block(
-                                c.getHash(),
-                                Block.MAXIMUM_TARGET,
-                                new ArrayList<Ballot>());
-                        d.genProof();
-                        Block e =
-                            new Block(
-                                d.getHash(),
-                                Block.MAXIMUM_TARGET,
-                                new ArrayList<Ballot>());
-                        e.genProof();
-
-                        Block f =
-                            new Block(
-                                b.getHash(),
-                                Block.MAXIMUM_TARGET,
-                                new ArrayList<Ballot>());
-                        f.genProof();
-                        Block g =
-                            new Block(
-                                f.getHash(),
-                                Block.MAXIMUM_TARGET,
-                                new ArrayList<Ballot>());
-                        g.genProof();
-
-                        Block h =
-                            new Block(
-                                a.getHash(),
-                                Block.MAXIMUM_TARGET,
-                                new ArrayList<Ballot>());
-                        h.genProof();
-
-                        Block i =
-                            new Block(
-                                "2",
-                                Block.MAXIMUM_TARGET,
-                                new ArrayList<Ballot>());
-                        i.genProof();
-
-                        StringBuffer sb = new StringBuffer();
-
-                        BlockChain bc = new BlockChain(a);
-                        sb.append(bc + "\n");
-                        bc.append(i);
-                        sb.append(bc + "\n");
-                        bc.append(d);
-                        sb.append(bc + "\n");
-                        bc.append(h);
-                        sb.append(bc + "\n");
-                        bc.append(g);
-                        sb.append(bc + "\n");
-                        bc.append(c);
-                        sb.append(bc + "\n");
-                        bc.append(e);
-                        sb.append(bc + "\n");
-                        bc.append(f);
-                        sb.append(bc + "\n");
-                        bc.append(b);
-                        sb.append(bc + "\n");
-
-                        System.out.println(sb.toString()
-                            .replaceAll(a.getHash(), "A")
-                            .replaceAll(b.getHash(), "B")
-                            .replaceAll(c.getHash(), "C")
-                            .replaceAll(d.getHash(), "D")
-                            .replaceAll(e.getHash(), "E")
-                            .replaceAll(f.getHash(), "F")
-                            .replaceAll(g.getHash(), "G")
-                            .replaceAll(h.getHash(), "H")
-                            .replaceAll(i.getHash(), "I"));
                     }
                     else if (input[0].equalsIgnoreCase("testload"))
                     {
