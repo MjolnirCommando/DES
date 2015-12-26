@@ -1,3 +1,19 @@
+/*============================================================================*\
+ | Copyright (C) 2015 Matthew Edwards                                         |
+ |                                                                            |
+ | Licensed under the Apache License, Version 2.0 (the "License"); you may    |
+ | not use this file except in compliance with the License. You may obtain a  |
+ | copy of the License at                                                     |
+ |                                                                            |
+ |     http://www.apache.org/licenses/LICENSE-2.0                             |
+ |                                                                            |
+ | Unless required by applicable law or agreed to in writing, software        |
+ | distributed under the License is distributed on an "AS IS" BASIS,          |
+ | WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   |
+ | See the License for the specific language governing permissions and        |
+ | limitations under the License.                                             |
+\*============================================================================*/
+
 package me.edwards.des.net;
 
 import java.io.IOException;
@@ -9,10 +25,13 @@ import java.util.logging.Logger;
 import me.edwards.des.Node;
 import me.edwards.des.net.packet.Packet;
 import me.edwards.des.net.packet.PacketPing;
+import me.edwards.des.net.packet.PacketPong;
 
 // -----------------------------------------------------------------------------
 /**
- * Data structure to handle elements of a connection between nodes<br>
+ * Data structure to handle the connection between {@link Node Nodes}. A
+ * Connection tracks the ping and status of a connection between Nodes and
+ * ensures that connection stay alive.<br>
  * <br>
  * Created on: Oct 17, 2015 at 10:21:02 AM
  * 
@@ -27,10 +46,12 @@ public class Connection
      * A connection was initiated by this node
      */
     public static int           CONNECTION_NODE_ONLY = 0;
+
     /**
      * A connection was initiated by a peer node
      */
     public static int           CONNECTION_PEER_ONLY = 1;
+
     /**
      * The connection is agreed upon by both nodes
      */
@@ -41,6 +62,8 @@ public class Connection
     private static final int    CONNECT_TIMEOUT      = 3000;
     private static final int    PING_TIMEOUT         = 60000;
 
+    
+    // -------------------------------------------------------------------------
     private Node                node;
     private Socket              socket;
     private String              name;
@@ -54,13 +77,17 @@ public class Connection
     private boolean             pingSent;
 
 
+    // ~ Constructors ..........................................................
+
+    // -------------------------------------------------------------------------
     /**
-     * Creates new Connection
+     * Creates new Connection using the local {@link Node Node} and the socket
+     * connecting to the remote Node.
      * 
      * @param node
-     *            Node which owns this connection
+     *            Local Node which owns this connection
      * @param socket
-     *            Socket which is used by this connection
+     *            Socket to remote Node which is used by this connection
      */
     public Connection(Node node, Socket socket)
     {
@@ -75,10 +102,11 @@ public class Connection
     }
 
 
+    // -------------------------------------------------------------------------
     /**
-     * Returns the socket used by this connection
+     * Returns the socket used by this connection.
      * 
-     * @return
+     * @return Socket connecting to remote {@link Node Node}
      */
     public Socket getSocket()
     {
@@ -86,10 +114,11 @@ public class Connection
     }
 
 
+    // -------------------------------------------------------------------------
     /**
-     * Returns this connection's common name (if any)
+     * Returns this connection's common name (if any).
      * 
-     * @return
+     * @return This connection's human-readable common name
      */
     public String getName()
     {
@@ -97,10 +126,12 @@ public class Connection
     }
 
 
+    // -------------------------------------------------------------------------
     /**
-     * Sets this connection's name
+     * Sets this connection's common name.
      * 
      * @param name
+     *            Human-readable common name of this connection
      */
     public void setName(String name)
     {
@@ -108,10 +139,11 @@ public class Connection
     }
 
 
+    // -------------------------------------------------------------------------
     /**
-     * Returns this connection's host name
+     * Returns this connection's host name in the format "/ADDRESS:PORT".
      * 
-     * @return
+     * @return The connection host name in the format "/ADDRESS:PORT"
      */
     public String getHostName()
     {
@@ -119,10 +151,11 @@ public class Connection
     }
 
 
+    // -------------------------------------------------------------------------
     /**
-     * Returns the address of this connection
+     * Returns the destination address of this connection.
      * 
-     * @return
+     * @return Address of remote Node as InetAddress
      */
     public InetAddress getAddress()
     {
@@ -130,10 +163,11 @@ public class Connection
     }
 
 
+    // -------------------------------------------------------------------------
     /**
-     * Returns the port of this connection
+     * Returns the destination port of this connection.
      * 
-     * @return
+     * @return Port of remote Node
      */
     public int getPort()
     {
@@ -141,10 +175,14 @@ public class Connection
     }
 
 
+    // -------------------------------------------------------------------------
     /**
-     * Sets the port of this connection
+     * Sets the port of this connection. Port is initially set to connecting
+     * port. Should only be used to reset the port to the remote Node's server
+     * port by {@linkplain Node#parse(byte[], Connection)}.
      * 
      * @param port
+     *            Port of remote Node
      */
     public void setPort(int port)
     {
@@ -152,10 +190,11 @@ public class Connection
     }
 
 
+    // -------------------------------------------------------------------------
     /**
-     * Returns true if this connection is running
+     * Returns true if the connection is currently connected.
      * 
-     * @return
+     * @return True if connected, False otherwise
      */
     public boolean isConnected()
     {
@@ -163,10 +202,26 @@ public class Connection
     }
 
 
+    // -------------------------------------------------------------------------
     /**
-     * Returns the connection status
+     * Returns the current connection status.<br>
+     * <br>
+     * <table>
+     * <tr>
+     * <td>{@link Connection#CONNECTION_NODE_ONLY CONNECTION_NODE_ONLY}</td>
+     * <td>A connection was initiated by this node</td>
+     * </tr>
+     * <tr>
+     * <td>{@link Connection#CONNECTION_PEER_ONLY CONNECTION_PEER_ONLY}</td>
+     * <td>A connection was initiated by a peer node</td>
+     * </tr>
+     * <tr>
+     * <td>{@link Connection#CONNECTION_BOTH CONNECTION_BOTH}</td>
+     * <td>The connection is agreed upon by both nodes</td>
+     * </tr>
+     * </table>
      * 
-     * @return
+     * @return Current connection status
      */
     public int getConnectionStatus()
     {
@@ -174,10 +229,27 @@ public class Connection
     }
 
 
+    // -------------------------------------------------------------------------
     /**
-     * Sets the connection status
+     * Sets the current connection status.<br>
+     * <br>
+     * <table>
+     * <tr>
+     * <td>{@link Connection#CONNECTION_NODE_ONLY CONNECTION_NODE_ONLY}</td>
+     * <td>A connection was initiated by this node</td>
+     * </tr>
+     * <tr>
+     * <td>{@link Connection#CONNECTION_PEER_ONLY CONNECTION_PEER_ONLY}</td>
+     * <td>A connection was initiated by a peer node</td>
+     * </tr>
+     * <tr>
+     * <td>{@link Connection#CONNECTION_BOTH CONNECTION_BOTH}</td>
+     * <td>The connection is agreed upon by both nodes</td>
+     * </tr>
+     * </table>
      * 
      * @param status
+     *            New connection status
      */
     public void setConnectionStatus(int status)
     {
@@ -185,6 +257,7 @@ public class Connection
     }
 
 
+    // -------------------------------------------------------------------------
     @Override
     public String toString()
     {
@@ -196,8 +269,10 @@ public class Connection
     }
 
 
+    // -------------------------------------------------------------------------
     /**
-     * Sends a Packet through this connection
+     * Sends a {@link Packet Packet} through this connection to the remote
+     * {@link Node Node}.
      * 
      * @param packet
      *            Packet to send
@@ -222,10 +297,14 @@ public class Connection
     }
 
 
+    // -------------------------------------------------------------------------
     /**
-     * Notifies the connection that the pong was received
+     * Notifies the connection that the {@link PacketPong Pong} was received.
+     * This method is used by {@linkplain Node#parse(byte[], Connection)}.
      * 
      * @param pong
+     *            Payload of the Pong received (Must be one more than the sent
+     *            Ping value to be valid)
      */
     public void pong(long pong)
     {
@@ -237,8 +316,9 @@ public class Connection
     }
 
 
+    // -------------------------------------------------------------------------
     /**
-     * Connects the handled socket
+     * Connects the local Node to the remote Node through this Connection.
      */
     public void connect()
     {
@@ -272,7 +352,7 @@ public class Connection
                         if (!pingSent)
                         {
                             pingValue =
-                                (long)(Long.MAX_VALUE * Math.random()) + 1;
+                                (long) (Long.MAX_VALUE * Math.random()) + 1;
                             pingSent = true;
                         }
                         send(new PacketPing(pingValue));
@@ -314,9 +394,10 @@ public class Connection
     }
 
 
+    // -------------------------------------------------------------------------
     /**
-     * Disconnects this connection from its handled socket and closes node
-     * communication
+     * Disconnects the local and remote Nodes, closes the connection socket and
+     * closes node communication.
      */
     public void disconnect()
     {
