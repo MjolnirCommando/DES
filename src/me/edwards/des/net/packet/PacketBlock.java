@@ -1,25 +1,51 @@
+/*============================================================================*\
+ | Copyright (C) 2015 Matthew Edwards                                         |
+ |                                                                            |
+ | Licensed under the Apache License, Version 2.0 (the "License"); you may    |
+ | not use this file except in compliance with the License. You may obtain a  |
+ | copy of the License at                                                     |
+ |                                                                            |
+ |     http://www.apache.org/licenses/LICENSE-2.0                             |
+ |                                                                            |
+ | Unless required by applicable law or agreed to in writing, software        |
+ | distributed under the License is distributed on an "AS IS" BASIS,          |
+ | WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   |
+ | See the License for the specific language governing permissions and        |
+ | limitations under the License.                                             |
+\*============================================================================*/
+
 package me.edwards.des.net.packet;
 
 import java.nio.ByteBuffer;
 import me.edwards.des.block.Block;
 
+// -----------------------------------------------------------------------------
 /**
- * Block Packet<br>
- * This packet is used to transfer block data between nodes. Created on: Nov 3,
- * 2015 at 10:28:29 AM
+ * <strong>Block Packet</strong><br>
+ * <br>
+ * This packet is used to transfer {@link Block Block} data between Nodes.<br>
+ * <br>
+ * Created on: Nov 3, 2015 at 10:28:29 AM
  * 
  * @author Matthew Edwards
  */
 public class PacketBlock
     extends Packet
 {
+    // ~ Static/Instance variables .............................................
+
+    // -------------------------------------------------------------------------
     private Block block;
 
 
+    // ~ Constructors ..........................................................
+
+    // -------------------------------------------------------------------------
     /**
      * Creates new PacketBlock
      * 
      * @param block
+     *            Block payload
      */
     public PacketBlock(Block block)
     {
@@ -28,11 +54,12 @@ public class PacketBlock
     }
 
 
+    // -------------------------------------------------------------------------
     /**
-     * Creates new PacketBlock
+     * Creates new PacketBlock from binary data
      * 
      * @param binary
-     *            Packet binary data
+     *            Packet binary data as byte array
      */
     public PacketBlock(byte[] binary)
     {
@@ -46,10 +73,13 @@ public class PacketBlock
     }
 
 
+    // ~ Methods ...............................................................
+
+    // -------------------------------------------------------------------------
     /**
-     * Returns the block transferred by this packet
+     * Returns the {@link Block Block} transferred by this Packet
      * 
-     * @return
+     * @return Block payload
      */
     public Block getBlock()
     {
@@ -57,6 +87,7 @@ public class PacketBlock
     }
 
 
+    // -------------------------------------------------------------------------
     @Override
     public byte[] getBinary()
     {

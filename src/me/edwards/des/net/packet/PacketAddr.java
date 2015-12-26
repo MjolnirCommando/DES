@@ -1,3 +1,19 @@
+/*============================================================================*\
+ | Copyright (C) 2015 Matthew Edwards                                         |
+ |                                                                            |
+ | Licensed under the Apache License, Version 2.0 (the "License"); you may    |
+ | not use this file except in compliance with the License. You may obtain a  |
+ | copy of the License at                                                     |
+ |                                                                            |
+ |     http://www.apache.org/licenses/LICENSE-2.0                             |
+ |                                                                            |
+ | Unless required by applicable law or agreed to in writing, software        |
+ | distributed under the License is distributed on an "AS IS" BASIS,          |
+ | WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   |
+ | See the License for the specific language governing permissions and        |
+ | limitations under the License.                                             |
+\*============================================================================*/
+
 package me.edwards.des.net.packet;
 
 import java.nio.ByteBuffer;
@@ -8,8 +24,9 @@ import me.edwards.des.net.Connection;
 /**
  * <strong>Address Packet</strong><br>
  * <br>
- * This packet is sent as a response to a GETADDR Packet with a list of the
- * responding node's known peers. It is used in the bootstrapping process.<br>
+ * This packet is sent as a response to a {@link PacketGetAddr PacketGetAddr}
+ * with a list of the responding node's known peers. It is used in the
+ * bootstrapping process.<br>
  * <br>
  * Created on: Oct 19, 2015 at 10:46:14 AM
  * 
@@ -18,9 +35,15 @@ import me.edwards.des.net.Connection;
 public class PacketAddr
     extends Packet
 {
+    // ~ Static/Instance variables .............................................
+
+    // -------------------------------------------------------------------------
     private String[] peerList;
 
 
+    // ~ Constructors ..........................................................
+
+    // -------------------------------------------------------------------------
     /**
      * Creates new PacketAddr
      * 
@@ -38,11 +61,12 @@ public class PacketAddr
     }
 
 
+    // -------------------------------------------------------------------------
     /**
-     * Creates new PacketAddr
+     * Creates new PacketAddr from binary data
      * 
      * @param binary
-     *            Packet binary data
+     *            Packet binary data as byte array
      */
     public PacketAddr(byte[] binary)
     {
@@ -60,10 +84,13 @@ public class PacketAddr
     }
 
 
+    // ~ Methods ...............................................................
+
+    // -------------------------------------------------------------------------
     /**
-     * Returns this packet's peer list
+     * Returns this Packet's peer list
      * 
-     * @return
+     * @return Peer list as an array of Strings
      */
     public String[] getPeers()
     {
@@ -71,6 +98,7 @@ public class PacketAddr
     }
 
 
+    // -------------------------------------------------------------------------
     @Override
     public byte[] getBinary()
     {

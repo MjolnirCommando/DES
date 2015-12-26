@@ -1,26 +1,53 @@
+/*============================================================================*\
+ | Copyright (C) 2015 Matthew Edwards                                         |
+ |                                                                            |
+ | Licensed under the Apache License, Version 2.0 (the "License"); you may    |
+ | not use this file except in compliance with the License. You may obtain a  |
+ | copy of the License at                                                     |
+ |                                                                            |
+ |     http://www.apache.org/licenses/LICENSE-2.0                             |
+ |                                                                            |
+ | Unless required by applicable law or agreed to in writing, software        |
+ | distributed under the License is distributed on an "AS IS" BASIS,          |
+ | WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   |
+ | See the License for the specific language governing permissions and        |
+ | limitations under the License.                                             |
+\*============================================================================*/
+
 package me.edwards.des.net.packet;
 
 import java.nio.ByteBuffer;
+import me.edwards.des.block.Block;
 import me.edwards.des.util.ByteUtil;
 
+// -----------------------------------------------------------------------------
 /**
- * Get Blocks Packet<br>
- * This packet is sent to request block information from other nodes during the
- * bootstrap process. Created on: Oct 17, 2015 at 9:12:01 AM
+ * <strong>Get Blocks Packet</strong><br>
+ * <br>
+ * This packet is sent to request {@link Block Block} information from other
+ * Nodes during the bootstrap process.<br>
+ * <br>
+ * Created on: Oct 17, 2015 at 9:12:01 AM
  * 
  * @author Matthew Edwards
  */
 public class PacketGetBlocks
     extends Packet
 {
+    // ~ Static/Instance variables .............................................
+
+    // -------------------------------------------------------------------------
     private String hash;
 
 
+    // ~ Constructors ..........................................................
+
+    // -------------------------------------------------------------------------
     /**
      * Creates new PacketGetBlocks
      * 
      * @param hash
-     *            Hash of the oldest Block requested
+     *            Hash of the oldest {@link Block Block} requested
      */
     public PacketGetBlocks(String hash)
     {
@@ -29,11 +56,12 @@ public class PacketGetBlocks
     }
 
 
+    // -------------------------------------------------------------------------
     /**
      * Creates new PacketGetBlocks from binary data
      * 
      * @param binary
-     *            Packet binary data
+     *            Packet binary data as byte array
      */
     public PacketGetBlocks(byte[] binary)
     {
@@ -46,10 +74,14 @@ public class PacketGetBlocks
     }
 
 
+    // ~ Methods ...............................................................
+
+    // -------------------------------------------------------------------------
     /**
-     * Returns the oldest hash of the Block requested by this packet
+     * Returns the oldest {@link Block#getHash() hash} of the {@link Block
+     * Block} requested by this packet.
      * 
-     * @return
+     * @return 32-digit hexadecimal hash of the oldest Block requested
      */
     public String getHash()
     {
@@ -57,6 +89,7 @@ public class PacketGetBlocks
     }
 
 
+    // -------------------------------------------------------------------------
     @Override
     public byte[] getBinary()
     {

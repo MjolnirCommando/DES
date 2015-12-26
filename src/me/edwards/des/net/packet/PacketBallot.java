@@ -1,25 +1,51 @@
+/*============================================================================*\
+ | Copyright (C) 2015 Matthew Edwards                                         |
+ |                                                                            |
+ | Licensed under the Apache License, Version 2.0 (the "License"); you may    |
+ | not use this file except in compliance with the License. You may obtain a  |
+ | copy of the License at                                                     |
+ |                                                                            |
+ |     http://www.apache.org/licenses/LICENSE-2.0                             |
+ |                                                                            |
+ | Unless required by applicable law or agreed to in writing, software        |
+ | distributed under the License is distributed on an "AS IS" BASIS,          |
+ | WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   |
+ | See the License for the specific language governing permissions and        |
+ | limitations under the License.                                             |
+\*============================================================================*/
+
 package me.edwards.des.net.packet;
 
 import java.nio.ByteBuffer;
 import me.edwards.des.block.Ballot;
 
+// -----------------------------------------------------------------------------
 /**
- * Ballot Packet<br>
- * This packet is used to transfer ballot data between nodes. Created on: Nov 3,
- * 2015 at 10:28:29 AM
+ * <strong>Ballot Packet</strong><br>
+ * <br>
+ * This packet is used to transfer {@link Ballot Ballot} data between Nodes.<br>
+ * <br>
+ * Created on: Nov 3, 2015 at 10:28:29 AM
  * 
  * @author Matthew Edwards
  */
 public class PacketBallot
     extends Packet
 {
+    // ~ Static/Instance variables .............................................
+
+    // -------------------------------------------------------------------------
     private Ballot ballot;
 
 
+    // ~ Constructors ..........................................................
+
+    // -------------------------------------------------------------------------
     /**
      * Creates new PacketBallot
      * 
      * @param ballot
+     *            {@link Ballot Ballot} payload
      */
     public PacketBallot(Ballot ballot)
     {
@@ -28,11 +54,12 @@ public class PacketBallot
     }
 
 
+    // -------------------------------------------------------------------------
     /**
-     * Creates new PacketBallot
+     * Creates new PacketBallot from binary data
      * 
      * @param binary
-     *            Packet binary data
+     *            Packet binary data as byte array
      */
     public PacketBallot(byte[] binary)
     {
@@ -46,10 +73,13 @@ public class PacketBallot
     }
 
 
+    // ~ Methods ...............................................................
+
+    // -------------------------------------------------------------------------
     /**
-     * Returns the ballot transferred by this packet
+     * Returns the {@link Ballot Ballot} transferred by this Packet.
      * 
-     * @return
+     * @return Ballot payload
      */
     public Ballot getBallot()
     {
@@ -57,6 +87,7 @@ public class PacketBallot
     }
 
 
+    // -------------------------------------------------------------------------
     @Override
     public byte[] getBinary()
     {
