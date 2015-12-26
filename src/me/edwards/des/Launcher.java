@@ -46,6 +46,7 @@ import me.edwards.des.net.packet.PacketPing;
 import me.edwards.des.util.ByteUtil;
 import me.edwards.des.util.HashUtil;
 
+// -----------------------------------------------------------------------------
 /**
  * Handles the Launch of a Node from the command line. This class loads all
  * necessary logging configurations and initializes all loggers and working
@@ -120,6 +121,17 @@ public class Launcher
      */
     public static void main(String[] args)
     {
+        System.out.println(HashUtil.generateLeadingZeros(HashUtil.generateHash("Hello".getBytes())));
+//        String hash = "";
+//        int nonce = -1;
+//        while (!hash.startsWith("000"))
+//        {
+//            hash = HashUtil.generateLeadingZeros(HashUtil.generateHash(("Hello" + nonce).getBytes()));
+//            System.out.println(nonce + ":" + hash);
+//            nonce++;
+//        }
+        System.exit(0);
+        
         Node node = new Node();
         node.peerList = new ArrayList<String>();
         for (int i = 0; args.length > i; i++)

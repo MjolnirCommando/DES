@@ -1,15 +1,35 @@
+/*============================================================================*\
+ | Copyright (C) 2015 Matthew Edwards                                         |
+ |                                                                            |
+ | Licensed under the Apache License, Version 2.0 (the "License"); you may    |
+ | not use this file except in compliance with the License. You may obtain a  |
+ | copy of the License at                                                     |
+ |                                                                            |
+ |     http://www.apache.org/licenses/LICENSE-2.0                             |
+ |                                                                            |
+ | Unless required by applicable law or agreed to in writing, software        |
+ | distributed under the License is distributed on an "AS IS" BASIS,          |
+ | WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   |
+ | See the License for the specific language governing permissions and        |
+ | limitations under the License.                                             |
+\*============================================================================*/
+
 package me.edwards.des.util;
 
 import java.security.InvalidParameterException;
 
+// -----------------------------------------------------------------------------
 /**
- * Data structure representing a version for an application or class Created on:
- * May 28, 2015 at 11:19:51 AM
+ * Data structure representing a version for an application or class.<br>
+ * <br>
+ * Created on: May 28, 2015 at 11:19:51 AM
  * 
  * @author Matthew Edwards
  */
 public class Version
 {
+    // ~ Static/Instance variables .............................................
+    
     private static final int[] primes =
                                           new int[] { 3, 5, 7, 11, 13, 17, 23,
         29                               };
@@ -20,8 +40,11 @@ public class Version
     private String             versionToString;
 
 
+    // ~ Constructors ..........................................................
+
+    // -------------------------------------------------------------------------
     /**
-     * Creates new version (0.0)
+     * Creates new Version (Initialized as 0.0)
      */
     public Version()
     {
@@ -29,12 +52,13 @@ public class Version
     }
 
 
+    // -------------------------------------------------------------------------
     /**
-     * Creates new Version from parsed string
+     * Creates new Version from parsed string.
      * 
      * @param version
      *            Version in format "12.34 Version_String" with a version number
-     *            first (seperated with periods), a space, and a version ID
+     *            first (separated with periods), a space, and a version ID
      *            string (Alpha, etc.)
      * @throws InvalidParameterException
      *             Throws InvalidParameterException if "version" string is
@@ -93,11 +117,15 @@ public class Version
     }
 
 
+    // ~ Methods ...............................................................
+
+    // -------------------------------------------------------------------------
     /**
-     * Returns true if both versions are equal
+     * Compares this version and the specified version for equality.
      * 
      * @param v
-     * @return
+     *            Version to compare
+     * @return True if both versions are equal, False otherwise
      */
     public boolean isEqualTo(Version v)
     {
@@ -105,11 +133,14 @@ public class Version
     }
 
 
+    // -------------------------------------------------------------------------
     /**
-     * Returns true if this version is newer than the specified version
+     * Compares this version and the specified version to find the newer one.
      * 
      * @param v
-     * @return
+     *            Version to compare
+     * @return True if this version is newer than the specified version, False
+     *         otherwise
      */
     public boolean isNewerThan(Version v)
     {
@@ -133,11 +164,14 @@ public class Version
     }
 
 
+    // -------------------------------------------------------------------------
     /**
-     * Returns true if this version is older than the specified version
+     * Compares this version and the specified version to find the older one.
      * 
      * @param v
-     * @return
+     *            Version to compare
+     * @return True if this version is older than the specified version, False
+     *         otherwise
      */
     public boolean isOlderThan(Version v)
     {
