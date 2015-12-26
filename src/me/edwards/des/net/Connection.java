@@ -18,6 +18,9 @@ import me.edwards.des.net.packet.PacketPing;
  */
 public class Connection
 {
+    // ~ Static/Instance variables .............................................
+
+    // -------------------------------------------------------------------------
     /**
      * A connection was initiated by this node
      */

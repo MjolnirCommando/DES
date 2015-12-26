@@ -53,6 +53,7 @@ public class Block
 {
     // ~ Static/Instance variables .............................................
 
+    // -------------------------------------------------------------------------
     /**
      * Maximum Target value for DES
      */
@@ -60,6 +61,8 @@ public class Block
         (byte) 0x1F, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF });
     // (byte) 0x1d, (byte) 0xF0, (byte) 0x00, (byte) 0x00});
 
+    
+    // -------------------------------------------------------------------------
     private final int         VERSION        = 1;
     private int               version;
     private String            prevBlockHash;

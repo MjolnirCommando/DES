@@ -45,11 +45,14 @@ public class Ballot
 {
     // ~ Static/Instance variables .............................................
 
+    // -------------------------------------------------------------------------
     /**
      * This class' Ballot version
      */
     private static final byte VERSION = 1;
 
+    
+    // -------------------------------------------------------------------------
     private byte              version;
     private String            id;
     private byte[]            votes;
