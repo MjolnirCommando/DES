@@ -24,7 +24,7 @@ import me.edwards.des.util.HashUtil;
 
 // -----------------------------------------------------------------------------
 /**
- * Data structure to store a maintain a single cast Ballot for a single entity
+ * Data structure to store and maintain a single cast Ballot for a single entity
  * (user). Ballots are created in an Election Application when a user votes.<br>
  * <br>
  * The Ballot contains the {@link Vote Votes} chosen by the user in addition to
