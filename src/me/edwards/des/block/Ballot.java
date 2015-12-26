@@ -197,6 +197,7 @@ public class Ballot
     }
 
 
+    // -------------------------------------------------------------------------
     @Override
     public String toString()
     {
@@ -218,6 +219,7 @@ public class Ballot
     }
 
 
+    // -------------------------------------------------------------------------
     @Override
     public boolean equals(Object obj)
     {

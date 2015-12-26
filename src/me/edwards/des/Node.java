@@ -399,8 +399,8 @@ public class Node
      * @see PacketBallot
      * @see PacketBlock
      * @see PacketGetAddr
-     * @see PacketBlocks
-     * @see PacketData
+     * @see PacketGetBlocks
+     * @see PacketGetData
      * @see PacketInv
      * @see PacketNotFound
      * @see PacketPing
