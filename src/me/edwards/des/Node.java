@@ -65,7 +65,7 @@ import me.edwards.des.util.Version;
  */
 public class Node
 {
-    // ~ Static/instance variables .............................................
+    // ~ Static/Instance variables .............................................
 
     // -------------------------------------------------------------------------
     /**

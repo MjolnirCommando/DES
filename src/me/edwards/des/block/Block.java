@@ -20,7 +20,7 @@ public class Block
      * Maximum Target value for DES
      */
     public static final int   MAXIMUM_TARGET = ByteUtil.bytesToInt(new byte[] {
-        (byte)0x1f, (byte)0xFf, (byte)0xff, (byte)0xff }); // ByteUtil.bytesToInt(new
+        (byte)0x1f, (byte)0xff, (byte)0xff, (byte)0xff }); // ByteUtil.bytesToInt(new
 // byte[] {(byte) 0x1d, (byte) 0xF0, (byte) 0x00, (byte) 0x00});
 
     private final int         VERSION        = 1;
@@ -74,9 +74,6 @@ public class Block
         byte[] prevBlockHashBytes = new byte[32];
         data.get(prevBlockHashBytes, 0, prevBlockHashBytes.length);
         this.prevBlockHash = ByteUtil.bytesToHex(prevBlockHashBytes);
-        byte[] merkleRootHashBytes = new byte[32];
-        data.get(merkleRootHashBytes, 0, merkleRootHashBytes.length);
-        this.merkleRootHash = ByteUtil.bytesToHex(merkleRootHashBytes);
         this.time = data.getInt();
         this.target = data.getInt();
         this.ballots = new ArrayList<Ballot>();
@@ -87,8 +84,9 @@ public class Block
             int size = data.getInt();
             byte[] bytes = new byte[size];
             data.get(bytes, 0, size);
-            ballots.add(new Ballot(bytes));
+            this.ballots.add(new Ballot(bytes));
         }
+        this.merkleRootHash = HashUtil.generateLeadingZeros(getMerkleRoot(0, 0));
         genBytes();
         this.myHash =
             HashUtil.generateLeadingZeros(HashUtil.generateBlockHash(
@@ -197,12 +195,10 @@ public class Block
                 size += 4 + ballots.get(i).getBytes().length;
             }
             ByteBuffer data =
-                ByteBuffer.allocate(4 + 32 + 32 + 4 + 4 + 4 + 4 + size);
+                ByteBuffer.allocate(4 + 32 + 4 + 4 + 4 + 4 + size);
             data.putInt(version);
             data.put(ByteUtil.hexToBytes(HashUtil
                 .generateLeadingZeros(prevBlockHash)));
-            data.put(ByteUtil.hexToBytes(HashUtil
-                .generateLeadingZeros(merkleRootHash)));
             data.putInt(time);
             data.putInt(target);
             data.putInt(ballots.size());
@@ -243,12 +239,12 @@ public class Block
             + " @ "
             + DateFormat.getDateTimeInstance().format(
                 new Date(((long)(time)) * 60000)) + " "
-            + (validate() ? "[VALID]" : "[INVALID]") + "\n" + "Hash:       "
-            + myHash + "\n" + "PrevHash:   " + prevBlockHash + "\n"
-            + "MerkleRoot: " + merkleRootHash + "\n" + "Target:     " + tar
-            + "   Difficulty: " + getDifficulty(target) + "\n" + "Ballots:    "
-            + ballots.size() + "\n" + "Nonce:      " + nonce + "\n"
-            + "-------------------------------------------";
+            + (validate() ? "[VALID]" : "[INVALID]") + "\nHash:       "
+            + myHash + "\nPrevHash:   " + prevBlockHash + "\nMerkleRoot: "
+            + merkleRootHash + "\nTarget:     " + tar + "   Difficulty: "
+            + getDifficulty(target) + "\nBallots:    " + ballots.size()
+            + "\nNonce:      " + nonce
+            + "\n-------------------------------------------";
     }
 
 
@@ -286,6 +282,6 @@ public class Block
         double max = ByteUtil.bytesToInt(maxBytes);
         double tar = ByteUtil.bytesToInt(targetBytes);
 
-        return max / tar * Math.pow(2, 8 * ((maxE - 3) - (tarE - 3)));
+        return max / tar * Math.pow(2, 8 * ((maxE - (byte) 3) - (tarE - (byte) 3)));
     }
 }
