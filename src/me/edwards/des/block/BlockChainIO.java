@@ -29,7 +29,7 @@ import java.util.zip.ZipOutputStream;
 import me.edwards.des.Launcher;
 import me.edwards.des.util.ByteUtil;
 
-// -------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 /**
  * Handles reading and writing of BlockChains to and from the file system.<br>
  * <br>
