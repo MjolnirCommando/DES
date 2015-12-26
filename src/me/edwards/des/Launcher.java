@@ -84,10 +84,11 @@ public class Launcher
      * <br>
      * List of command line arguments:<br>
      * <table>
-     * <thead style="font-weight:bold;">
-     * <td>Flag</td>
-     * <td>Usage</td>
-     * <td>Description</td> </thead>
+     * <thead>
+     * <td><strong>Flag</strong></td>
+     * <td><strong>Usage</strong></td>
+     * <td><strong>Description</strong></td>
+     * </thead>
      * <tr>
      * <td>-dir</td>
      * <td>-dir &lt;Directory&gt;</td>

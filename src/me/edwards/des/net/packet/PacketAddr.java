@@ -4,10 +4,13 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import me.edwards.des.net.Connection;
 
+// -----------------------------------------------------------------------------
 /**
- * Address Packet<br>
+ * <strong>Address Packet</strong><br>
+ * <br>
  * This packet is sent as a response to a GETADDR Packet with a list of the
- * responding node's known peers. It is used in the bootstrapping process.
+ * responding node's known peers. It is used in the bootstrapping process.<br>
+ * <br>
  * Created on: Oct 19, 2015 at 10:46:14 AM
  * 
  * @author Matthew Edwards

@@ -306,10 +306,11 @@ public class Node
      * the packet.<br>
      * <br>
      * <table>
-     * <thead style="font-weight:bold;">
-     * <td>Packet Type</td>
-     * <td>Process Category</td>
-     * <td>Description of Process</td> </thead>
+     * <thead>
+     * <td><strong>Packet Type</strong></td>
+     * <td><strong>Process Category</strong></td>
+     * <td><strong>Description of Process</strong></td>
+     * </thead>
      * <tr>
      * <td>{@link PacketPing Ping}</td>
      * <td>Connection Status</td>
