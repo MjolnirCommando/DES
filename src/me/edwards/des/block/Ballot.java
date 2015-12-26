@@ -19,6 +19,7 @@ package me.edwards.des.block;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import me.edwards.des.Node;
+import me.edwards.des.net.packet.PacketInv;
 import me.edwards.des.util.ByteUtil;
 import me.edwards.des.util.HashUtil;
 

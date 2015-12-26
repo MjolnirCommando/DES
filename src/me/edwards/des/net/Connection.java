@@ -10,9 +10,11 @@ import me.edwards.des.Node;
 import me.edwards.des.net.packet.Packet;
 import me.edwards.des.net.packet.PacketPing;
 
+// -----------------------------------------------------------------------------
 /**
- * Data structure to handle elements of a connection between nodes Created on:
- * Oct 17, 2015 at 10:21:02 AM
+ * Data structure to handle elements of a connection between nodes<br>
+ * <br>
+ * Created on: Oct 17, 2015 at 10:21:02 AM
  * 
  * @author Matthew Edwards
  */
