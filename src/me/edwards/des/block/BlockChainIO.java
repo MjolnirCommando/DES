@@ -1,3 +1,19 @@
+/*============================================================================*\
+ | Copyright (C) 2015 Matthew Edwards                                         |
+ |                                                                            |
+ | Licensed under the Apache License, Version 2.0 (the "License"); you may    |
+ | not use this file except in compliance with the License. You may obtain a  |
+ | copy of the License at                                                     |
+ |                                                                            |
+ |     http://www.apache.org/licenses/LICENSE-2.0                             |
+ |                                                                            |
+ | Unless required by applicable law or agreed to in writing, software        |
+ | distributed under the License is distributed on an "AS IS" BASIS,          |
+ | WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   |
+ | See the License for the specific language governing permissions and        |
+ | limitations under the License.                                             |
+\*============================================================================*/
+
 package me.edwards.des.block;
 
 import java.io.BufferedInputStream;
@@ -13,24 +29,34 @@ import java.util.zip.ZipOutputStream;
 import me.edwards.des.Launcher;
 import me.edwards.des.util.ByteUtil;
 
+// -------------------------------------------------------------------------
 /**
- * Handles reading and writing of BlockChains to and from the file system
+ * Handles reading and writing of BlockChains to and from the file system.<br>
+ * <br>
  * Created on: Dec 21, 2015 at 11:28:44 AM
  * 
  * @author Matthew Edwards
  */
 public class BlockChainIO
 {
+    // ~ Static/Instance variables .............................................
+
+    /**
+     * Size of the read/write Buffer
+     */
     private static final int BUFFER_SIZE = 4096;
 
 
+    // ~ Methods ...............................................................
+
+    // -------------------------------------------------------------------------
     /**
-     * Saves BlockChain to specified file
+     * Saves the BlockChain to the specified file.
      * 
      * @param bc
-     *            MDTTable to use as root
+     *            BlockChain object to save
      * @param fileName
-     *            Full path of file to save to
+     *            Full path of file in which to save
      * @throws IOException
      *             Thrown if file writing encounters an error
      */
@@ -93,11 +119,12 @@ public class BlockChainIO
     }
 
 
+    // -------------------------------------------------------------------------
     /**
-     * Loads a BlockChain from file
+     * Loads a BlockChain from the specified file.
      * 
      * @param fileName
-     *            Full path of file to load from
+     *            Full path of file from which to load
      * @return BlockChain loaded from file
      * @throws IOException
      *             Thrown if file reading encounters an error or the fileName
