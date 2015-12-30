@@ -40,6 +40,7 @@ import me.edwards.des.block.BlockChain;
 import me.edwards.des.block.BlockChainIO;
 import me.edwards.des.block.Vote;
 import me.edwards.des.demo.Counter;
+import me.edwards.des.demo.Submitter;
 import me.edwards.des.net.Connection;
 import me.edwards.des.net.packet.PacketGetAddr;
 import me.edwards.des.net.packet.PacketInv;
@@ -98,6 +99,12 @@ public class Launcher
      * </td>
      * </tr>
      * <tr>
+     * <td>-demo</td>
+     * <td>-demo</td>
+     * <td>Starts the Node in demonstration mode.</td>
+     * </tr>
+     * </tr>
+     * <tr>
      * <td>-dir</td>
      * <td>-dir &lt;Directory&gt;</td>
      * <td>Sets the working directory of the Node.</td>
@@ -107,6 +114,11 @@ public class Launcher
      * <td>-gen</td>
      * <td>Generates a Genesis Block and saves it to
      * "generated_blockchain.block" in the working directory.</td>
+     * </tr>
+     * <tr>
+     * <td>-genids</td>
+     * <td>-genids &lt;Number of IDs&gt; (Directory)</td>
+     * <td>Generates key databases for demonstration purposes.</td>
      * </tr>
      * <tr>
      * <td>-name</td>
@@ -183,6 +195,13 @@ public class Launcher
                     }
                     System.exit(0);
                 }
+                else if (args[i].equalsIgnoreCase("-genids"))
+                {
+                    int ids = Integer.parseInt(args[++i]);
+                    GLOBAL.info("Generating ID databases...");
+                    Submitter.generateDatabase(DIR + (args.length == i + 1 ? "" : args[++i].replaceAll("\"", "")), ids);
+                    GLOBAL.info("ID databases generated!");
+                }
                 else if (args[i].equalsIgnoreCase("-count"))
                 {
                     try
@@ -202,12 +221,25 @@ public class Launcher
                     }
                     System.exit(0);
                 }
+                else if (args[i].equalsIgnoreCase("-demo"))
+                {
+                    node.demo = true;
+                    try
+                    {
+                        GLOBAL.info("Loading ID databases...");
+                        Submitter.loadDatabase(DIR);
+                        GLOBAL.info("ID databases loaded!");
+                    }
+                    catch (Exception e)
+                    {
+                        e.printStackTrace();
+                    }
+                }
             }
             catch (Exception e)
             {
                 System.err
                     .println("Malformed arguments! See documentation for proper usage.");
-                e.printStackTrace();
                 System.exit(0);
             }
         }
@@ -217,6 +249,10 @@ public class Launcher
         GLOBAL.info("DES Version " + Node.VERSION + " by Matthew Edwards");
         GLOBAL.info("(C) Copyright 2015 by Matthew Edwards");
         GLOBAL.info("------------------------------------------------");
+        if (node.demo)
+        {
+            GLOBAL.info("/// NOTICE! This Node is in Demonstration Mode \\\\\\");
+        }
         GLOBAL.info("DES Node "
             + (node.name == null ? "" : "\"" + node.name + "\"")
             + " is starting up @ "
@@ -257,6 +293,9 @@ public class Launcher
         }
 
         node.start();
+//        
+//        String[][] voteList = {{"1.1", "1.2"}, {"2.1", "2.2"}, {"3.1", "3.2"}, {"4.1", "4.2"}};
+//        Submitter.submit(node, voteList, 1000, 60 * 1000);
 
         Scanner in = new Scanner(System.in);
         while (node.running)

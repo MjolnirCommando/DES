@@ -48,9 +48,17 @@ public class BlockChain
 {
     // ~ Static/Instance variables .............................................
 
-    private Node             top;
-    private ArrayList<Block> queue;
-    private ArrayList<Node>  topList;
+    // -------------------------------------------------------------------------
+    /**
+     * The maximum size, in bytes, that a Block may be
+     */
+    public static final int MAXIMUM_BLOCK_SIZE = 1024 * 1024 * 10;
+    
+    
+    // -------------------------------------------------------------------------
+    private Node              top;
+    private ArrayList<Block>  queue;
+    private ArrayList<Node>   topList;
 
 
     // ~ Constructors ..........................................................
@@ -136,7 +144,6 @@ public class BlockChain
      */
     public byte[][] getBytes()
     {
-        int MAX_SIZE = 1024 * 1024 * 10;
         long length = 0;
         Node n = top;
         for (long i = 0; getSize() > i; i++)
@@ -144,12 +151,12 @@ public class BlockChain
             length += 4 + n.block.getBytes().length;
             n = n.parent;
         }
-        byte[][] bytes = new byte[(int)Math.ceil((double)length / MAX_SIZE)][];
+        byte[][] bytes = new byte[(int)Math.ceil((double)length / MAXIMUM_BLOCK_SIZE)][];
         n = top;
         for (int i = 0; bytes.length > i; i++)
         {
             ByteBuffer data =
-                ByteBuffer.allocate((int)Math.min(length, MAX_SIZE));
+                ByteBuffer.allocate((int)Math.min(length, MAXIMUM_BLOCK_SIZE));
             for (int j = 0; getSize() > j; j++)
             {
                 if (n.block.getBytes().length + data.position() > data.limit())
@@ -413,6 +420,31 @@ public class BlockChain
             }
         }
         return null;
+    }
+    
+    public boolean hasBallot(String uuid)
+    {
+        Node n = top;
+        while (n.height >= 0)
+        {
+            ArrayList<Ballot> ballots = n.block.getBallots();
+            for (int i = 0; ballots.size() > i; i++)
+            {
+                if (ballots.get(i).getID().equalsIgnoreCase(uuid))
+                {
+                    return true;
+                }
+            }
+            if (n.height > 0)
+            {
+                n = n.parent;
+            }
+            else
+            {
+                break;
+            }
+        }
+        return false;
     }
 
 

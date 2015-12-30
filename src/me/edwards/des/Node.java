@@ -20,12 +20,14 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.security.interfaces.ECPublicKey;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import me.edwards.des.block.Ballot;
 import me.edwards.des.block.Block;
 import me.edwards.des.block.BlockChain;
+import me.edwards.des.demo.Submitter;
 import me.edwards.des.net.Connection;
 import me.edwards.des.net.packet.Packet;
 import me.edwards.des.net.packet.Packet.PacketTypes;
@@ -79,6 +81,11 @@ public class Node
      * Default Packet Buffer Size
      */
     public static final int         BUFFER_SIZE = 4096;
+    
+    /**
+     * Minimum number of Ballots required to begin mining a Block
+     */
+    public static final int         BALLOT_GROUP = 2000;
 
     // -------------------------------------------------------------------------
     /**
@@ -133,6 +140,12 @@ public class Node
      * This Node's human readable name.
      */
     protected String                name;
+    
+    /**
+     * Demonstration mode flag used to indicate if this Node is currently in
+     * demonstration mode. This will disable and change some functionality.
+     */
+    protected boolean               demo;
 
     /**
      * Running flag used to indicate if this Node is presently accepting and
@@ -650,27 +663,96 @@ public class Node
             case BALLOT:
             {
                 PacketBallot packet = new PacketBallot(data);
-                logger.info("Received ballot " + packet.getBallot().getRoot()
-                    + "!");
+                logger.info("Received Ballot " + packet.getBallot().getRoot()
+                    + " with UUID " + packet.getBallot().getID());
                 final Ballot b = packet.getBallot();
                 new Thread(new Runnable() {
                     @Override
                     public void run()
                     {
-                        // TODO
+                        /*
+                         * Check that Ballot was requested and not unsolicited.
+                         */
+                        
                         if (!dataRequests.remove(b.getRoot()))
                         {
+                            logger.info("Ballot " + b.getID() + " is unsolicited.");
                             return;
                         }
+                        
+                        /*
+                         * Check that Ballot is not too large to be saved (closing a possible crashing vector).
+                         */
+                        
+                        if (b.getBytes().length >= BlockChain.MAXIMUM_BLOCK_SIZE - 60)
+                        {
+                            logger.info("Ballot " + b.getID() + " is too large.");
+                            return;
+                        }
+
+                        /*
+                         * Check that Ballot is not currently in list of this
+                         * Node's Ballots (the Ballot pool).
+                         */
+
                         for (int i = 0; ballots.size() > i; i++)
                         {
-                            if (ballots.get(i).getRoot()
-                                .equalsIgnoreCase(b.getRoot()))
+                            if (ballots.get(i).getID()
+                                .equalsIgnoreCase(b.getID()))
                             {
+                                logger.info("Ballot " + b.getID() + " is a duplicate.");
                                 return;
                             }
                         }
+
+                        /*
+                         * Check that Ballot is not currently in the BlockChain.
+                         */
+                        
+                        if (!blockChain.hasBallot(b.getID()))
+                        {
+                            logger.info("Ballot " + b.getID() + " is already in the BlockChain.");
+                            return;
+                        }
+                        
+                        /*
+                         * Check with Election Authority that the Ballot was
+                         * submitted. Validate signature using the public key stored by the Election Authority.
+                         * 
+                         * NOTE: This must be changed when an actual Election
+                         * Authority database is used.
+                         */
+                        
+                        if (demo)
+                        {
+                            ECPublicKey publicKey = Submitter.getKey(b.getID());
+                            
+                            if (publicKey == null)
+                            {
+                                logger.info("Ballot " + b.getID() + " was not cast.");
+                                return;
+                            }
+                            
+                            // TODO
+                        }
+                        else
+                        {
+                            /*
+                             * This is where Election Authority checks would go.
+                             */
+                        }
+                        
+                        /*
+                         * Ballot is valid, add it to the Ballot pool.
+                         */
+                            
                         ballots.add(b);
+                        
+                        if (ballots.size() >= BALLOT_GROUP)
+                        {
+                            generateBlock();
+                        }
+                        
                         PacketInv inv = new PacketInv();
                         inv.addInv(b);
                         sendToAll(inv);
