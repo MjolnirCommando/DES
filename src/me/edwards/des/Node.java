@@ -709,7 +709,7 @@ public class Node
                          * Check that Ballot is not currently in the BlockChain.
                          */
                         
-                        if (!blockChain.hasBallot(b.getID()))
+                        if (blockChain.hasBallot(b.getID()))
                         {
                             logger.info("Ballot " + b.getID() + " is already in the BlockChain.");
                             return;
@@ -1031,6 +1031,19 @@ public class Node
             blockGen = null;
             blockGenHash = null;
         }
+    }
+
+    
+    // -------------------------------------------------------------------------
+    /**
+     * Adds a hash to the {@link Node#dataRequests data requests} list.
+     * 
+     * @param hash
+     *            Hash to add to the data requests list
+     */
+    public void addDataRequest(String hash)
+    {
+        dataRequests.add(hash);
     }
 
 

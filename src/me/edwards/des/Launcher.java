@@ -136,6 +136,11 @@ public class Launcher
      * <td>-port &lt;Port&gt;</td>
      * <td>Sets the port to be used by the Node.</td>
      * </tr>
+     * <tr>
+     * <td>-submit</td>
+     * <td>-submit</td>
+     * <td>Adds a Submitter to the Node for demonstration purposes.</td>
+     * </tr>
      * </table>
      * 
      * @param args
@@ -154,7 +159,7 @@ public class Launcher
             System.exit(0);
         }
         
-        Node node = new Node();
+        final Node node = new Node();
         node.peerList = new ArrayList<String>();
         for (int i = 0; args.length > i; i++)
         {
@@ -191,7 +196,7 @@ public class Launcher
                     }
                     catch (IOException e)
                     {
-                        e.printStackTrace();
+                        GLOBAL.log(Level.WARNING, "Could not save BlockChain", e);
                     }
                     System.exit(0);
                 }
@@ -217,7 +222,7 @@ public class Launcher
                     }
                     catch (IOException e)
                     {
-                        e.printStackTrace();
+                        GLOBAL.log(Level.WARNING, "Counting IOException", e);
                     }
                     System.exit(0);
                 }
@@ -234,6 +239,29 @@ public class Launcher
                     {
                         e.printStackTrace();
                     }
+                }
+                else if (args[i].equalsIgnoreCase("-submit"))
+                {
+                    GLOBAL.info("Adding a Submitter to this Node...");
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run()
+                        {
+                            String[][] voteList = {{"1.1", "1.2"}, {"2.1", "2.2"}, {"3.1", "3.2"}, {"4.1", "4.2"}};
+                            try
+                            {
+                                while (!node.running)
+                                {
+                                    Thread.sleep(1000);
+                                }
+                                Submitter.submit(DIR, node, voteList, 20 * 1000);
+                            }
+                            catch (Exception e)
+                            {
+                                GLOBAL.log(Level.WARNING, "Submit Exception", e);
+                            }
+                        }
+                    }, "Submitter Wait").start();
                 }
             }
             catch (Exception e)
@@ -293,9 +321,6 @@ public class Launcher
         }
 
         node.start();
-//        
-//        String[][] voteList = {{"1.1", "1.2"}, {"2.1", "2.2"}, {"3.1", "3.2"}, {"4.1", "4.2"}};
-//        Submitter.submit(node, voteList, 1000, 60 * 1000);
 
         Scanner in = new Scanner(System.in);
         while (node.running)
@@ -480,7 +505,8 @@ public class Launcher
                         }
                         catch (Exception e)
                         {
-                            e.printStackTrace();
+                            GLOBAL.log(Level.WARNING, "Could not Load BlockChain", e);
+                            continue;
                         }
                         Thread.sleep(3000);
                         long time = System.currentTimeMillis() - 100000;
@@ -531,7 +557,8 @@ public class Launcher
                         }
                         catch (Exception e)
                         {
-                            e.printStackTrace();
+                            GLOBAL.log(Level.WARNING, "Could not Save BlockChain", e);
+                            continue;
                         }
                         System.exit(0);
                     }
@@ -556,7 +583,8 @@ public class Launcher
             }
             catch (Exception e)
             {
-                e.printStackTrace();
+                GLOBAL.log(Level.WARNING, "Console Exception", e);
+                continue;
             }
         }
         in.close();

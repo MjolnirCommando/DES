@@ -196,8 +196,6 @@ public class Submitter
         
         File privateFile = new File(file + "private.data");
         BufferedInputStream privateIn = new BufferedInputStream(new FileInputStream(privateFile));
-        byte[] userBytes = new byte[4];
-        privateIn.read(userBytes);
         while (privateIn.available() > 0)
         {
             try
@@ -241,6 +239,7 @@ public class Submitter
                             .nextInt(voteList[i].length)]));
                     }
                     Ballot ballot = new Ballot(uuid, "0", votes);
+                    node.addDataRequest(ballot.getRoot());
                     node.parse(new PacketBallot(ballot).getBinary(), null);
                     totalBallots++;
                     long projTime =
