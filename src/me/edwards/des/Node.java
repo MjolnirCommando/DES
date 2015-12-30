@@ -417,7 +417,7 @@ public class Node
     public void parse(byte[] data, Connection connection)
     {
         logger.finest("Received 0x" + Packet.toHex(data[0]) + " packet from "
-            + connection.getHostName());
+            + (connection == null ? "LOCAL" : connection.getHostName()));
         switch (Packet.lookup(data[0]))
         {
             case PING:
