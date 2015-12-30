@@ -104,6 +104,9 @@ public class Ballot
         buffer.put(ByteUtil.hexToBytes(this.signature));
         this.bytes = buffer.array();
         this.root = HashUtil.generateHash(this.bytes);
+        buffer.position(9);
+        this.votes = new byte[size];
+        buffer.get(this.votes);
     }
 
 
@@ -124,14 +127,15 @@ public class Ballot
         data.get(idBytes, 0, 8);
         this.id = ByteUtil.bytesToHex(idBytes);
         this.votes = new byte[data.capacity() - data.position() - 32];
+        data.get(this.votes);
         int rootLength = data.position() - 1;
         byte[] signatureBytes = new byte[32];
-        data.get(signatureBytes, 0, signatureBytes.length);
-        this.signature = new String(signatureBytes);
+        data.get(signatureBytes);
+        this.signature = ByteUtil.bytesToHex(signatureBytes);
         root = HashUtil.generateHash(binary);
         data.position(0);
         byte[] signatureRootBytes = new byte[rootLength];
-        data.get(signatureRootBytes, 0, rootLength);
+        data.get(signatureRootBytes);
         this.signatureRoot = HashUtil.generateHash(signatureRootBytes);
     }
 
@@ -198,6 +202,27 @@ public class Ballot
     public byte[] getBytes()
     {
         return bytes;
+    }
+
+
+    // -------------------------------------------------------------------------
+    /**
+     * Returns the {@link Vote Votes} contained in this Ballot as an ArrayList.
+     * 
+     * @return ArrayList containing votes
+     */
+    public ArrayList<Vote> getVotes()
+    {
+        ArrayList<Vote> voteList = new ArrayList<Vote>();
+        ByteBuffer data = ByteBuffer.wrap(votes);
+        while (data.hasRemaining())
+        {
+            int id = data.getInt();
+            byte[] strBytes = new byte[data.getInt()];
+            data.get(strBytes);
+            voteList.add(new Vote(id, new String(strBytes)));
+        }
+        return voteList;
     }
 
 

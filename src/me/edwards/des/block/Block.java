@@ -290,6 +290,18 @@ public class Block
         }
         return myBytes;
     }
+    
+
+    // -------------------------------------------------------------------------
+    /**
+     * Returns a list of the {@link Ballot Ballots} contained by this Block.
+     * 
+     * @return ArrayList containing the Ballots in the Block
+     */
+    public ArrayList<Ballot> getBallots()
+    {
+        return ballots;
+    }
 
 
     // -------------------------------------------------------------------------
