@@ -39,6 +39,7 @@ import me.edwards.des.block.Block;
 import me.edwards.des.block.BlockChain;
 import me.edwards.des.block.BlockChainIO;
 import me.edwards.des.block.Vote;
+import me.edwards.des.demo.Counter;
 import me.edwards.des.net.Connection;
 import me.edwards.des.net.packet.PacketGetAddr;
 import me.edwards.des.net.packet.PacketInv;
@@ -90,6 +91,13 @@ public class Launcher
      * <td><strong>Description</strong></td>
      * </thead>
      * <tr>
+     * <td>-count</td>
+     * <td>-count (BlockChain File)</td>
+     * <td>Tabulates the results of the specified BlockChain after loading it
+     * from file. If no BlockChain is specified, the default BlockChain is used.
+     * </td>
+     * </tr>
+     * <tr>
      * <td>-dir</td>
      * <td>-dir &lt;Directory&gt;</td>
      * <td>Sets the working directory of the Node.</td>
@@ -122,47 +130,6 @@ public class Launcher
      */
     public static void main(String[] args)
     {
-        Node node = new Node();
-        node.peerList = new ArrayList<String>();
-        for (int i = 0; args.length > i; i++)
-        {
-            if (args[i].equalsIgnoreCase("-dir"))
-            {
-                DIR = args[++i];
-            }
-            else if (args[i].equalsIgnoreCase("-peer"))
-            {
-                node.peerList.add(args[++i]);
-            }
-            else if (args[i].equalsIgnoreCase("-port"))
-            {
-                node.port = Integer.parseInt(args[++i]);
-            }
-            else if (args[i].equalsIgnoreCase("-name"))
-            {
-                node.name = args[++i];
-            }
-            else if (args[i].equalsIgnoreCase("-gen"))
-            {
-                Block genesis =
-                    new Block(
-                        "0",
-                        Block.MAXIMUM_TARGET,
-                        new ArrayList<Ballot>());
-                genesis.genProof();
-                try
-                {
-                    BlockChainIO.save(new BlockChain(genesis), DIR
-                        + "generated_blockchain.block");
-                }
-                catch (IOException e)
-                {
-                    e.printStackTrace();
-                }
-                System.exit(0);
-            }
-        }
-
         try
         {
             LogManager.getLogManager().readConfiguration(
@@ -173,6 +140,76 @@ public class Launcher
         {
             System.out.println("Could not initialize logger! Shutting down...");
             System.exit(0);
+        }
+        
+        Node node = new Node();
+        node.peerList = new ArrayList<String>();
+        for (int i = 0; args.length > i; i++)
+        {
+            try
+            {
+                if (args[i].equalsIgnoreCase("-dir"))
+                {
+                    DIR = args[++i];
+                }
+                else if (args[i].equalsIgnoreCase("-peer"))
+                {
+                    node.peerList.add(args[++i]);
+                }
+                else if (args[i].equalsIgnoreCase("-port"))
+                {
+                    node.port = Integer.parseInt(args[++i]);
+                }
+                else if (args[i].equalsIgnoreCase("-name"))
+                {
+                    node.name = args[++i];
+                }
+                else if (args[i].equalsIgnoreCase("-gen"))
+                {
+                    Block genesis =
+                        new Block(
+                            "0",
+                            Block.MAXIMUM_TARGET,
+                            new ArrayList<Ballot>());
+                    genesis.genProof();
+                    try
+                    {
+                        BlockChainIO.save(new BlockChain(genesis), DIR
+                            + "generated_blockchain.block");
+                    }
+                    catch (IOException e)
+                    {
+                        e.printStackTrace();
+                    }
+                    System.exit(0);
+                }
+                else if (args[i].equalsIgnoreCase("-count"))
+                {
+                    try
+                    {
+                        BlockChain bc = BlockChainIO.load(DIR + (args.length == i + 1 ? "data.block" : args[++i]));
+                        GLOBAL.info("Counting Ballots...");
+                        ArrayList<Counter.Result> results = Counter.count(bc);
+                        GLOBAL.info("Trimming results...");
+                        results = Counter.trim(results);
+                        GLOBAL.info("Formatting results...");
+                        String r = Counter.toString(results);
+                        GLOBAL.info("\n" + r);
+                    }
+                    catch (IOException e)
+                    {
+                        e.printStackTrace();
+                    }
+                    System.exit(0);
+                }
+            }
+            catch (Exception e)
+            {
+                System.err
+                    .println("Malformed arguments! See documentation for proper usage.");
+                e.printStackTrace();
+                System.exit(0);
+            }
         }
 
         node.logger = Logger.getLogger("DES.node");
@@ -238,6 +275,7 @@ public class Launcher
                     }
                     else if (input[0].equalsIgnoreCase("stop"))
                     {
+                        BlockChainIO.save(node.blockChain, DIR + "data.block");
                         node.stop();
                     }
                     else if (input[0].equalsIgnoreCase("ping"))
@@ -289,7 +327,7 @@ public class Launcher
                             Ballot b =
                                 new Ballot(
                                     "FFFFFFFFFFFFFFFF",
-                                    "<Signature>",
+                                    "0",
                                     votes);
                             GLOBAL.info("\n" + b.toString());
                             node.ballots.add(b);
@@ -315,7 +353,7 @@ public class Launcher
                             {
                                 Ballot b =
                                     new Ballot(ByteUtil.bytesToHex(ByteUtil
-                                        .intToBytes(i)), "<Signature>", votes);
+                                        .intToBytes(i)), "0", votes);
                                 node.ballots.add(b);
                             }
                             GLOBAL.info("Generated Ballots!");
@@ -371,61 +409,84 @@ public class Launcher
                     }
                     else if (input[0].equalsIgnoreCase("testload"))
                     {
+                        int blocks = input.length > 1 ? Integer.parseInt(input[1]) : 10;
+                        int ballotNum = input.length > 2 ? Integer.parseInt(input[2]) : 10;
+                        System.out
+                            .print("This command will perform a load test on this machine."
+                                + " The test may take several minutes and will be VERY processor intensive."
+                                + " It is not recommended that a load test is performed with more than 8M Ballots for the current build."
+                                + "\nYou have selected "
+                                + blocks
+                                + " Blocks with "
+                                + ballotNum
+                                + " Ballots each for a total of "
+                                + (blocks * ballotNum)
+                                + " Ballots, using " + (DIR
+                                + (input.length == 4
+                                ? input[3]
+                                : "testload.block")) + " as the initial BlockChain file."
+                                + "\nDo you wish to continue? (Y/N) ");
+                        String s = in.next();
+                        if (!s.equalsIgnoreCase("y"))
+                        {
+                            continue;
+                        }
                         try
                         {
                             node.blockChain =
-                                BlockChainIO.load(DIR + "testload.block");
+                                BlockChainIO.load(DIR
+                                    + (input.length == 4
+                                        ? input[3]
+                                        : "testload.block"));
                         }
                         catch (Exception e)
                         {
                             e.printStackTrace();
                         }
+                        Thread.sleep(3000);
                         long time = System.currentTimeMillis() - 100000;
-                        for (int i = 0; 1000 > i; i++)
+                        for (int i = 0; blocks > i; i++)
                         {
-                            int ballotNum = 1800;
                             ArrayList<Vote> votes = new ArrayList<Vote>();
                             votes.add(new Vote(0, "John Doe"));
-                            votes.add(new Vote(1, "Satoshi"));
+                            votes.add(new Vote(1, "John Doe1"));
                             votes.add(new Vote(2, "John Doe2"));
-                            votes.add(new Vote(3, "Satoshi2"));
-                            votes.add(new Vote(4, "John Doe3"));
-                            votes.add(new Vote(5, "Satoshi3"));
-                            votes.add(new Vote(6, "John Doe4"));
-                            votes.add(new Vote(7, "Satoshi4"));
-                            votes.add(new Vote(8, "John Doe5"));
-                            votes.add(new Vote(9, "Satoshi5"));
+                            votes.add(new Vote(3, "John Doe3"));
+                            votes.add(new Vote(4, "John Doe4"));
+                            votes.add(new Vote(5, "John Doe5"));
+                            votes.add(new Vote(6, "John Doe6"));
+                            votes.add(new Vote(7, "John Doe7"));
+                            votes.add(new Vote(8, "John Doe8"));
+                            votes.add(new Vote(9, "John Doe9"));
                             for (int j = 0; ballotNum > j; j++)
                             {
                                 node.ballots
                                     .add(new Ballot(
                                         ByteUtil.bytesToHex(ByteUtil
                                             .intToBytes(i)),
-                                        "<Signature>",
+                                        "0",
                                         votes));
                             }
                             if (System.currentTimeMillis() - time > 5000)
                             {
-                                System.out.println((i / 10) + "%");
+                                System.out.println((int) (i / (blocks / 100D))
+                                    + "%");
                                 time = System.currentTimeMillis();
                             }
+                            node.generateBlock();
                             while (node.blockGenHash != null)
                             {
-                                try
-                                {
-                                    Thread.sleep(2);
-                                }
-                                catch (InterruptedException e)
-                                {
-                                    e.printStackTrace();
-                                }
+                                Thread.sleep(2);
                             }
-                            node.generateBlock();
                         }
                         try
                         {
                             System.out.println("Saving...");
                             Thread.sleep(1000);
+                            while (node.blockGenHash != null)
+                            {
+                                Thread.sleep(2);
+                            }
                             BlockChainIO.save(node.blockChain, DIR
                                 + "testload.block");
                         }
