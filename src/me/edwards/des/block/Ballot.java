@@ -55,7 +55,7 @@ public class Ballot
     
     // -------------------------------------------------------------------------
     private byte              version;
-    private String            id;
+    private String            id;           // 8 bytes
     private byte[]            votes;
     private String            signature;    // 32 bytes
 
