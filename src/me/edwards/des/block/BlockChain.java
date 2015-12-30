@@ -105,11 +105,15 @@ public class BlockChain
                 }
                 int length = data.getInt();
                 byte[] blockData = new byte[length];
-                data.get(blockData, 0, length);
+                data.get(blockData);
                 Node child = new Node();
                 child.height = height--;
                 child.block = new Block(blockData);
-                child.parent = n;
+                child.parent = null;
+                if (n != null)
+                {
+                    n.parent = child;
+                }
                 if (i == 0 && j == 0)
                 {
                     this.top = child;
@@ -132,13 +136,13 @@ public class BlockChain
      */
     public byte[][] getBytes()
     {
-        int MAX_SIZE = 1024 * 1024 * 5;
+        int MAX_SIZE = 1024 * 1024 * 10;
         long length = 0;
         Node n = top;
         for (long i = 0; getSize() > i; i++)
         {
             length += 4 + n.block.getBytes().length;
-            n = top.parent;
+            n = n.parent;
         }
         byte[][] bytes = new byte[(int)Math.ceil((double)length / MAX_SIZE)][];
         n = top;
@@ -155,12 +159,16 @@ public class BlockChain
                 data.putInt(n.block.getBytes().length);
                 data.put(n.block.getBytes());
                 length -= n.block.getBytes().length;
-                n = top.parent;
+                n = n.parent;
+                if (n == null)
+                {
+                    break;
+                }
             }
             int pos = data.position();
             bytes[i] = new byte[pos];
             data.position(0);
-            data.get(bytes[i], 0, pos);
+            data.get(bytes[i]);
         }
         return bytes;
     }
