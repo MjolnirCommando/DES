@@ -893,26 +893,22 @@ public class Node
      */
     public void generateBlock()
     {
-        if (blockGen != null)
+        if (blockGen != null || ballots.size() == 0)
         {
             return;
+        }
+        final ArrayList<Ballot> tempBallot = new ArrayList<Ballot>();
+        int size = ballots.size();
+        for (int i = 0; size > i; i++)
+        {
+            tempBallot.add(ballots.get(0));
+            ballots.remove(0);
         }
         blockGen = new Thread(new Runnable() {
             @Override
             public void run()
             {
                 logger.info("Generating Block...");
-                ArrayList<Ballot> tempBallot = new ArrayList<Ballot>();
-                int size = ballots.size();
-                for (int i = 0; size > i; i++)
-                {
-                    tempBallot.add(ballots.get(0));
-                    ballots.remove(0);
-                }
-                while (tempBallot.contains(null))
-                {
-                    tempBallot.remove(null);
-                }
                 long time = System.currentTimeMillis();
                 blockGenHash = blockChain.getTop().getHash();
                 Block b =
@@ -927,6 +923,7 @@ public class Node
                 inv.addInv(b);
                 logger.info("Notifying peers of block...");
                 sendToAll(inv);
+                blockGenHash = null;
                 stopBlockGeneration();
             }
         }, "Block Generation");
@@ -944,6 +941,10 @@ public class Node
     {
         if (blockGen != null)
         {
+            if (blockGenHash != null)
+            {
+                logger.info("Block generation stopped!");
+            }
             blockGen.interrupt();
             blockGen = null;
             blockGenHash = null;
