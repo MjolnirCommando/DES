@@ -837,9 +837,16 @@ public class Node
             }
             case BLOCK:
             {
+                PacketBlock packet = null;
                 try
                 {
-                PacketBlock packet = new PacketBlock(data);
+                    packet = new PacketBlock(data);
+                }
+                catch (Exception e)
+                {
+                    logger.log(Level.WARNING, "Could not extract Block from Packet", e);
+                    return;
+                }
                 logger.info("Received block " + packet.getBlock().getHash()
                     + "!");
                 final Block b = packet.getBlock();
@@ -942,11 +949,6 @@ public class Node
                     }
                 }, "Block Validation " + packet.getBlock().getHash()).start();
                 return;
-                }
-                catch (Exception e)
-                {
-                    System.out.println(Packet.toString(data));
-                }
             }
             case GETBLOCKS:
             {
