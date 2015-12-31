@@ -77,19 +77,19 @@ public class Node
      * handshake process.
      */
     public static final Version     VERSION         = new Version(
-                                                        "15.12.31.1 DES_ALPHA");
+                                                        "15.12.31.2 DES_ALPHA");
 
     /**
      * Default Packet Buffer Size
      */
-    public static final int         BUFFER_SIZE     = 8192;
+    public static final int         BUFFER_SIZE     = 4096;
 
     /**
      * Threshold number of Ballots required to begin mining a Block. This number
      * is also the maximum number of Ballots allowed in a Block, configurable to
      * each indiviual Node.
      */
-    public static final int         BLOCK_THRESHOLD = 500;
+    public static final int         BLOCK_THRESHOLD = 1000;
 
     /**
      * Minimum amount of time (in seconds) to begin mining a Block
@@ -509,7 +509,15 @@ public class Node
                     PacketInv inv = new PacketInv();
                     for (int i = 0; ballots.size() > i; i++)
                     {
-                        inv.addInv(ballots.get(i));
+                        Ballot bi = ballots.get(i);
+                        if (bi != null)
+                        {
+                            inv.addInv(bi);
+                        }
+                        else
+                        {
+                            i--;
+                        }
                     }
                     connection.send(inv);
                     logger.finer("Requesting address cache information from "
@@ -546,7 +554,15 @@ public class Node
                     PacketInv inv = new PacketInv();
                     for (int i = 0; ballots.size() > i; i++)
                     {
-                        inv.addInv(ballots.get(i));
+                        Ballot bi = ballots.get(i);
+                        if (bi != null)
+                        {
+                            inv.addInv(bi);
+                        }
+                        else
+                        {
+                            i--;
+                        }
                     }
                     connection.send(inv);
                     logger.finer("Requesting address cache information from "
@@ -599,11 +615,19 @@ public class Node
                         boolean b = true;
                         for (int v = 0; ballots.size() > v; v++)
                         {
-                            if (ballots.get(v).getRoot()
-                                .equals(packet.getHash(i)))
+                            Ballot bi = ballots.get(v);
+                            if (bi != null)
                             {
-                                b = false;
-                                break;
+                                if (bi.getRoot()
+                                    .equals(packet.getHash(i)))
+                                {
+                                    b = false;
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                v--;
                             }
                         }
                         if (b)
@@ -657,16 +681,24 @@ public class Node
                         boolean b = false;
                         for (int v = 0; ballots.size() > v; v++)
                         {
-                            if (ballots.get(v).getRoot()
-                                .equalsIgnoreCase(packet.getHash(i)))
+                            Ballot bi = ballots.get(v);
+                            if (bi != null)
                             {
-                                b = true;
-                                logger.finer("Request for resource "
-                                    + packet.getHash(i) + "("
-                                    + packet.getType(i) + ")! Sending data...");
-                                connection
-                                    .send(new PacketBallot(ballots.get(v)));
-                                break;
+                                if (bi.getRoot()
+                                    .equalsIgnoreCase(packet.getHash(i)))
+                                {
+                                    b = true;
+                                    logger.finer("Request for resource "
+                                        + packet.getHash(i) + "("
+                                        + packet.getType(i) + ")! Sending data...");
+                                    connection
+                                        .send(new PacketBallot(bi));
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                v--;
                             }
                         }
                         if (!b)
@@ -702,7 +734,16 @@ public class Node
             }
             case BALLOT:
             {
-                PacketBallot packet = new PacketBallot(data);
+                PacketBallot packet = null;
+                try
+                {
+                    packet = new PacketBallot(data);
+                }
+                catch (Exception e)
+                {
+                    logger.log(Level.WARNING, "Could not extract Ballot from Packet", e);
+                    return;
+                }
                 logger.fine("Received Ballot " + packet.getBallot().getRoot()
                     + " with UUID " + packet.getBallot().getID());
                 final Ballot b = packet.getBallot();
@@ -740,7 +781,13 @@ public class Node
 
                         for (int i = 0; ballots.size() > i; i++)
                         {
-                            if (ballots.get(i).getID()
+                            Ballot bi = ballots.get(i);
+                            if (bi == null)
+                            {
+                                i--;
+                                continue;
+                            }
+                            if (bi.getID()
                                 .equalsIgnoreCase(b.getID()))
                             {
                                 logger.fine("Ballot " + b.getID()
@@ -753,7 +800,7 @@ public class Node
                          * Check that Ballot is not currently in the BlockChain.
                          */
 
-                        if (blockChain.hasBallot(b.getID()))
+                        if (blockChain.hasBallot(null, b.getID()))
                         {
                             logger.fine("Ballot " + b.getID()
                                 + " is already in the BlockChain.");
@@ -941,7 +988,8 @@ public class Node
                              * BlockChain.
                              */
 
-                            if (blockChain.hasBallot(bBallot.get(i).getID()))
+                            if (blockChain.hasBallot(b.getPrevHash(), bBallot
+                                .get(i).getID()))
                             {
                                 logger.info("Block " + b.getHash()
                                     + " contains duplicate Ballot.");
@@ -1029,10 +1077,18 @@ public class Node
                         {
                             for (int j = 0; ballots.size() > j; j++)
                             {
-                                if (ballots.get(j).getID()
-                                    .equalsIgnoreCase(bBallots.get(i).getID()))
+                                Ballot bi = ballots.get(j);
+                                if (bi != null)
                                 {
-                                    ballots.remove(j--);
+                                    if (bi.getID()
+                                        .equalsIgnoreCase(bBallots.get(i).getID()))
+                                    {
+                                        ballots.remove(j--);
+                                    }
+                                }
+                                else
+                                {
+                                    j--;
                                 }
                             }
                         }
@@ -1244,19 +1300,19 @@ public class Node
         {
             tempBallot.add(ballots.get(i));
         }
+        stopBlockGeneration();
         blockGen = new Thread(new Runnable() {
             @Override
             public void run()
             {
+                int currTar = blockChain.getCurrentTarget();
                 logger.info("Generating Block for " + tempBallot.size()
-                    + " Ballots...");
+                    + " Ballots (Out of " + ballots.size()
+                    + " Ballots) with a target of "
+                    + ByteUtil.bytesToHex(ByteUtil.intToBytes(currTar)) + "...");
                 long time = System.currentTimeMillis();
                 blockGenHash = blockChain.getTop().getHash();
-                Block b =
-                    new Block(
-                        blockGenHash,
-                        blockChain.getCurrentTarget(),
-                        tempBallot);
+                Block b = new Block(blockGenHash, currTar, tempBallot);
                 try
                 {
                     b.genProof();

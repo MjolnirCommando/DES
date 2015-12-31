@@ -480,12 +480,23 @@ public class BlockChain
      * Returns True if the specified {@linkplain Ballot} is contained in the
      * longest branch of this BlockChain.
      * 
-     * @param uuid UUID of the Ballot
+     * @param hash
+     *            Parent hash of the {@linkplain Block} containing this ballot.
+     * @param uuid
+     *            UUID of the Ballot
      * @return True if the Ballot exists, False otherwise
      */
-    public boolean hasBallot(String uuid)
+    public boolean hasBallot(String hash, String uuid)
     {
         Node n = top;
+        if (hash != null)
+        {
+            Node n2 = getNode(hash);
+            if (n2 != null)
+            {
+                n = n2;
+            }
+        }
         while (n.height >= 0)
         {
             ArrayList<Ballot> ballots = n.block.getBallots();

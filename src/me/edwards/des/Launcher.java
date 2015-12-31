@@ -269,7 +269,7 @@ public class Launcher
                                 {
                                     Thread.sleep(1000);
                                 }
-                                Submitter.submit(DIR, node, voteList, 20 * 1000);
+                                Submitter.submit(DIR, node, voteList, 38 * 60 * 1000 / 38);
                             }
                             catch (Exception e)
                             {

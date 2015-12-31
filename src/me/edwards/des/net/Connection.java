@@ -26,6 +26,7 @@ import me.edwards.des.Node;
 import me.edwards.des.net.packet.Packet;
 import me.edwards.des.net.packet.PacketPing;
 import me.edwards.des.net.packet.PacketPong;
+import me.edwards.des.util.ByteUtil;
 
 // -----------------------------------------------------------------------------
 /**
@@ -60,7 +61,7 @@ public class Connection
     private static final Logger logger               = Logger
                                                          .getLogger("DES.node");
     private static final int    CONNECT_TIMEOUT      = 3000;
-    private static final int    PING_TIMEOUT         = 60000;
+    private static final int    PING_TIMEOUT         = 60000 * 5;
 
     
     // -------------------------------------------------------------------------
@@ -75,7 +76,6 @@ public class Connection
     private long                ping;
     private long                pingValue;
     private boolean             pingSent;
-
 
     // ~ Constructors ..........................................................
 
@@ -96,16 +96,6 @@ public class Connection
         this.address = socket.getInetAddress();
         this.port = socket.getPort();
         this.name = getHostName();
-
-        try
-        {
-            socket.setReceiveBufferSize(Node.BUFFER_SIZE);
-            socket.setSendBufferSize(Node.BUFFER_SIZE);
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
 
         this.connected = false;
         this.connectionStatus = CONNECTION_NODE_ONLY;
@@ -301,7 +291,7 @@ public class Connection
             }
             else
             {
-                logger.log(Level.WARNING, "Could not send packet!", e);
+                logger.log(Level.FINE, "Could not send packet!", e);
             }
         }
     }
@@ -369,28 +359,33 @@ public class Connection
                     }
                     try
                     {
-                        if (socket.getInputStream().available() != 0)
+                        if (socket.getInputStream().available() >= 5)
                         {
-                            byte[] data =
-                                new byte[socket.getInputStream().available()];
-                            socket.getInputStream().read(data);
-                            ByteBuffer bytes = ByteBuffer.wrap(data);
-                            int pointer = 0;
-                            while (pointer < data.length - 1)
+                            byte[] idBytes = new byte[1];
+                            socket.getInputStream().read(idBytes);
+                            byte[] sizeBytes = new byte[4];
+                            socket.getInputStream().read(sizeBytes);
+                            int size = ByteUtil.bytesToInt(sizeBytes);
+                            byte[] packetData = new byte[size - 5];
+                            int actual =
+                                socket.getInputStream().read(packetData);
+                            while (actual < size - 5)
                             {
-                                bytes.position(pointer);
-                                bytes.get();
-                                int packetSize = bytes.getInt();
-                                if (packetSize > data.length - pointer)
+                                Thread.sleep(5);
+                                if (socket.getInputStream().available() > 0)
                                 {
-                                    logger.log(Level.SEVERE, "Packet size overload! Expected " + packetSize + " but received " + (data.length - pointer));
+                                    actual +=
+                                        socket.getInputStream().read(
+                                            packetData,
+                                            actual,
+                                            packetData.length - actual);
                                 }
-                                byte[] packet = new byte[packetSize];
-                                bytes.position(pointer);
-                                bytes.get(packet);
-                                pointer += packet.length;
-                                node.parse(packet, c);
                             }
+                            ByteBuffer packet = ByteBuffer.allocate(size);
+                            packet.put(idBytes);
+                            packet.put(sizeBytes);
+                            packet.put(packetData);
+                            node.parse(packet.array(), c);
                         }
                         else
                         {
@@ -401,6 +396,7 @@ public class Connection
                     {
                         logger.log(Level.WARNING, "Socket Receiving Error in "
                             + c, e);
+                        System.exit(0);
                     }
                 }
             }
