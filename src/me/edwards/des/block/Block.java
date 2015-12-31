@@ -308,7 +308,7 @@ public class Block
     /**
      * Returns the time when this Block was mined.
      * 
-     * @return Unix Timestamp adjusted to seconds (instead of milliseconds)
+     * @return Unix Timestamp adjusted to minutes (instead of milliseconds)
      */
     public long getTime()
     {
