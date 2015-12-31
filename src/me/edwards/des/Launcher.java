@@ -21,12 +21,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.PrivateKey;
-import java.security.SecureRandom;
-import java.security.Signature;
-import java.security.interfaces.ECPublicKey;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,10 +40,8 @@ import me.edwards.des.demo.Counter;
 import me.edwards.des.demo.Submitter;
 import me.edwards.des.net.Connection;
 import me.edwards.des.net.packet.PacketGetAddr;
-import me.edwards.des.net.packet.PacketInv;
 import me.edwards.des.net.packet.PacketPing;
 import me.edwards.des.util.ByteUtil;
-import me.edwards.des.util.HashUtil;
 
 // -----------------------------------------------------------------------------
 /**
@@ -157,7 +149,7 @@ public class Launcher
                 DIR = args[++i];
             }
         }
-        
+
         try
         {
             File f = new File(DIR + "logs/");
@@ -177,7 +169,7 @@ public class Launcher
             e.printStackTrace();
             System.exit(0);
         }
-        
+
         final Node node = new Node();
         node.peerList = new ArrayList<String>();
         for (int i = 0; args.length > i; i++)
@@ -211,7 +203,10 @@ public class Launcher
                     }
                     catch (IOException e)
                     {
-                        GLOBAL.log(Level.WARNING, "Could not save BlockChain", e);
+                        GLOBAL.log(
+                            Level.WARNING,
+                            "Could not save BlockChain",
+                            e);
                     }
                     System.exit(0);
                 }
@@ -219,14 +214,22 @@ public class Launcher
                 {
                     int ids = Integer.parseInt(args[++i]);
                     GLOBAL.info("Generating ID databases...");
-                    Submitter.generateDatabase(DIR + (args.length == i + 1 ? "" : args[++i].replaceAll("\"", "")), ids);
+                    Submitter.generateDatabase(
+                        DIR
+                            + (args.length == i + 1 ? "" : args[++i]
+                                .replaceAll("\"", "")),
+                        ids);
                     GLOBAL.info("ID databases generated!");
                 }
                 else if (args[i].equalsIgnoreCase("-count"))
                 {
                     try
                     {
-                        BlockChain bc = BlockChainIO.load(DIR + (args.length == i + 1 ? "data.block" : args[++i]));
+                        BlockChain bc =
+                            BlockChainIO.load(DIR
+                                + (args.length == i + 1
+                                    ? "data.block"
+                                    : args[++i]));
                         GLOBAL.info("Counting Ballots...");
                         ArrayList<Counter.Result> results = Counter.count(bc);
                         GLOBAL.info("Trimming results...");
@@ -262,21 +265,28 @@ public class Launcher
                         @Override
                         public void run()
                         {
-                            String[][] voteList = {{"1.1", "1.2"}, {"2.1", "2.2"}, {"3.1", "3.2"}, {"4.1", "4.2"}};
+                            String[][] voteList =
+                                { { "1.1", "1.2" }, { "2.1", "2.2" },
+                                    { "3.1", "3.2" }, { "4.1", "4.2" } };
                             try
                             {
                                 while (!node.running)
                                 {
                                     Thread.sleep(1000);
                                 }
-                                Submitter.submit(DIR, node, voteList, 38 * 60 * 1000 / 38);
+                                Submitter.submit(
+                                    DIR,
+                                    node,
+                                    voteList,
+                                    38 * 60 * 1000 / 38);
                             }
                             catch (Exception e)
                             {
                                 GLOBAL.log(Level.WARNING, "Submit Exception", e);
                             }
                         }
-                    }, "Submitter Wait").start();
+                    },
+                        "Submitter Wait").start();
                 }
             }
             catch (Exception e)
@@ -393,85 +403,6 @@ public class Launcher
                         {
                             c.send(new PacketGetAddr());
                             GLOBAL.info("Sent GETADDR to " + c);
-                        }
-                    }
-                    else if (input[0].equalsIgnoreCase("send"))
-                    {
-                        if (input[1].equalsIgnoreCase("ballot"))
-                        {
-                            GLOBAL.info("Generating ballot...");
-                            ArrayList<Vote> votes = new ArrayList<Vote>();
-                            votes.add(new Vote(0, "John Doe"));
-                            votes.add(new Vote(1, "Satoshi"));
-                            Ballot b =
-                                new Ballot(
-                                    "FFFFFFFFFFFFFFFF",
-                                    "0",
-                                    votes);
-                            GLOBAL.info("\n" + b.toString());
-                            node.ballots.add(b);
-                            GLOBAL.info("Sending ballot...");
-                            PacketInv inv = new PacketInv();
-                            inv.addInv(b);
-                            node.sendToAll(inv);
-                        }
-                    }
-                    else if (input[0].equalsIgnoreCase("gen"))
-                    {
-                        if (input[1].equalsIgnoreCase("block"))
-                        {
-                            node.generateBlock();
-                        }
-                        else if (input[1].equalsIgnoreCase("ballot"))
-                        {
-                            int ballotNum = Integer.parseInt(input[2]);
-                            ArrayList<Vote> votes = new ArrayList<Vote>();
-                            votes.add(new Vote(0, "John Doe"));
-                            votes.add(new Vote(1, "Satoshi"));
-                            for (int i = 0; ballotNum > i; i++)
-                            {
-                                Ballot b =
-                                    new Ballot(ByteUtil.bytesToHex(ByteUtil
-                                        .intToBytes(i)), "0", votes);
-                                node.ballots.add(b);
-                            }
-                            GLOBAL.info("Generated Ballots!");
-                        }
-                        else if (input[1].equalsIgnoreCase("key"))
-                        {
-                            KeyPairGenerator keyGen =
-                                KeyPairGenerator.getInstance("EC");
-                            SecureRandom random =
-                                SecureRandom.getInstance("SHA1PRNG");
-
-                            keyGen.initialize(256, random);
-
-                            KeyPair pair = keyGen.generateKeyPair();
-                            PrivateKey priv = pair.getPrivate();
-                            ECPublicKey pub = (ECPublicKey)pair.getPublic();
-
-                            Signature dsa =
-                                Signature.getInstance("SHA1withECDSA");
-                            dsa.initSign(priv);
-                            String root =
-                                HashUtil.generateHash("THIS IS THE ROOT"
-                                    .getBytes());
-                            dsa.update(root.getBytes());
-                            byte[] realSig = dsa.sign();
-                            dsa.initVerify(pub);
-                            dsa.update(root.getBytes());
-                            System.out.println("Root:      " + root);
-                            System.out.println("Signature: "
-                                + HashUtil.generateLeadingZeros(ByteUtil
-                                    .bytesToHex(realSig), 144));
-                            System.out.println("Pub Key X: "
-                                + HashUtil.generateLeadingZeros(pub.getW()
-                                    .getAffineX().toString(16)));
-                            System.out.println("Pub Key Y: "
-                                + HashUtil.generateLeadingZeros(pub.getW()
-                                    .getAffineY().toString(16)));
-                            System.out.println("Verified:  "
-                                + dsa.verify(realSig));
                         }
                     }
                     else if (input[0].equalsIgnoreCase("myaddr"))

@@ -176,7 +176,10 @@ public class Block
      * Generates a {@link HashUtil#generateProof(byte[], int) Proof of Work} for
      * this block and validates the Block's contents. If the block is already
      * valid, this method will return.
-     * @throws InterruptedException Thrown if the Thread is interrupted by {@linkplain Node#stopBlockGeneration()}.
+     * 
+     * @throws InterruptedException
+     *             Thrown if the Thread is interrupted by
+     *             {@linkplain Node#stopBlockGeneration()}.
      */
     public void genProof() throws InterruptedException
     {
