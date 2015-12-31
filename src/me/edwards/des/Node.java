@@ -77,7 +77,7 @@ public class Node
      * handshake process.
      */
     public static final Version     VERSION         = new Version(
-                                                        "15.12.23.1 DES_ALPHA");
+                                                        "15.12.31.1 DES_ALPHA");
 
     /**
      * Default Packet Buffer Size
@@ -89,7 +89,7 @@ public class Node
      * is also the maximum number of Ballots allowed in a Block, configurable to
      * each indiviual Node.
      */
-    public static final int         BLOCK_THRESHOLD = 200;
+    public static final int         BLOCK_THRESHOLD = 2000;
 
     /**
      * Minimum amount of time (in seconds) to begin mining a Block
