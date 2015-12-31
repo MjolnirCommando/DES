@@ -97,6 +97,16 @@ public class Connection
         this.port = socket.getPort();
         this.name = getHostName();
 
+        try
+        {
+            socket.setReceiveBufferSize(Node.BUFFER_SIZE);
+            socket.setSendBufferSize(Node.BUFFER_SIZE);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
         this.connected = false;
         this.connectionStatus = CONNECTION_NODE_ONLY;
     }
@@ -370,7 +380,12 @@ public class Connection
                             {
                                 bytes.position(pointer);
                                 bytes.get();
-                                byte[] packet = new byte[bytes.getInt()];
+                                int packetSize = bytes.getInt();
+                                if (packetSize > data.length - pointer)
+                                {
+                                    logger.log(Level.SEVERE, "Packet size overload! Expected " + packetSize + " but received " + (data.length - pointer));
+                                }
+                                byte[] packet = new byte[packetSize];
                                 bytes.position(pointer);
                                 bytes.get(packet);
                                 pointer += packet.length;
