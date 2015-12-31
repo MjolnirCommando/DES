@@ -16,6 +16,7 @@
 
 package me.edwards.des.block;
 
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
@@ -53,6 +54,11 @@ public class BlockChain
      * The maximum size, in bytes, that a Block may be
      */
     public static final int MAXIMUM_BLOCK_SIZE = 1024 * 1024 * 10;
+    
+    /**
+     * The goal time for ten Blocks to be mined, in minutes.
+     */
+    public static final int BLOCK_GOAL = 10;
     
     
     // -------------------------------------------------------------------------
@@ -440,10 +446,10 @@ public class BlockChain
             return -1;
         }
         int h = n.height;
-        ArrayList<Long> times = new ArrayList<Long>();
+        ArrayList<Integer> times = new ArrayList<Integer>();
         while (h - n.height < 10)
         {
-            long time = n.block.getTime();
+            int time = n.block.getTime();
             for (int i = 0; times.size() > i; i++)
             {
                 if (times.get(i) >= time)
@@ -500,6 +506,60 @@ public class BlockChain
             }
         }
         return false;
+    }
+    
+    
+    // -------------------------------------------------------------------------
+    /**
+     * Returns the current target of the BlockChain. This method is used for
+     * adjusting the difficulty of mining a {@linkplain Block}.<br>
+     * <br>
+     * The difficulty is adjusted by finding the difference in timestamps of the past 10 (or available) Blocks.
+     * This difference is
+     * 
+     * @return
+     */
+    public int getCurrentTarget()
+    {
+        if (getSize() < 10)
+        {
+            return Block.MAXIMUM_TARGET;
+        }
+        
+        Node n = this.top;
+        int time = n.getBlock().getTime();
+        int h = n.height;
+        while (h - n.height < 10)
+        {
+            if (n.height > 0)
+            {
+                n = n.parent;
+            }
+            else
+            {
+                break;
+            }
+        }
+        int target = n.getBlock().getTarget();
+        int realTime = n.getBlock().getTime() - time;
+        BigInteger newTarget = Block.getTarget(target);
+        if (BLOCK_GOAL / (double) realTime > 4)
+        {
+            newTarget = newTarget.multiply(new BigInteger("4"));
+        }
+        else if (BLOCK_GOAL / (double) realTime < 0.25)
+        {
+            newTarget = newTarget.divide(new BigInteger("4"));
+        }
+        else
+        {
+            newTarget = newTarget.multiply(new BigInteger(BLOCK_GOAL + "")).divide(new BigInteger(realTime + ""));
+        }
+        if (newTarget.compareTo(Block.getTarget(Block.MAXIMUM_TARGET)) == 1)
+        {
+            return Block.MAXIMUM_TARGET;
+        }
+        return Block.getTarget(newTarget);
     }
 
 

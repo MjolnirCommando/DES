@@ -887,6 +887,19 @@ public class Node
                                 + " is already in the BlockChain.");
                             return;
                         }
+                        
+                        /*
+                         * Check that the Block's target difficulty matches that
+                         * of the current BlockChain.
+                         */
+                        
+                        if (Block.getDifficulty(b.getTarget()) < Block
+                            .getDifficulty(blockChain.getCurrentTarget()))
+                        {
+                            logger.info("Block " + b.getHash()
+                                + " has an invalid target.");
+                            return;
+                        }
 
                         /*
                          * Check that the Block has a satisfactory and valid
@@ -915,6 +928,10 @@ public class Node
                                 + " was mined at an invalid time.");
                             return;
                         }
+                        
+                        /*
+                         * Check that all the Ballots in this Block are valid.
+                         */
 
                         ArrayList<Ballot> bBallot = b.getBallots();
                         for (int i = 0; bBallot.size() > i; i++)
@@ -1231,11 +1248,15 @@ public class Node
             @Override
             public void run()
             {
-                logger.info("Generating Block for " + tempBallot.size() + " Ballots...");
+                logger.info("Generating Block for " + tempBallot.size()
+                    + " Ballots...");
                 long time = System.currentTimeMillis();
                 blockGenHash = blockChain.getTop().getHash();
                 Block b =
-                    new Block(blockGenHash, Block.MAXIMUM_TARGET, tempBallot);
+                    new Block(
+                        blockGenHash,
+                        blockChain.getCurrentTarget(),
+                        tempBallot);
                 try
                 {
                     b.genProof();
@@ -1246,7 +1267,8 @@ public class Node
                     {
                         for (int j = 0; ballots.size() > j; j++)
                         {
-                            if (ballots.get(j).getID().equalsIgnoreCase(tempBallot.get(i).getID()))
+                            if (ballots.get(j).getID()
+                                .equalsIgnoreCase(tempBallot.get(i).getID()))
                             {
                                 ballots.remove(j--);
                             }

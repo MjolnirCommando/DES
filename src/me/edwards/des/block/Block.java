@@ -311,9 +311,21 @@ public class Block
      * 
      * @return Unix Timestamp adjusted to minutes (instead of milliseconds)
      */
-    public long getTime()
+    public int getTime()
     {
         return time;
+    }
+    
+    
+    // -------------------------------------------------------------------------
+    /**
+     * Returns the target (in Short-Format) of this Block.
+     * 
+     * @return Short-Format target
+     */
+    public int getTarget()
+    {
+        return target;
     }
 
 
@@ -373,6 +385,30 @@ public class Block
         int i = ByteUtil.bytesToInt(bytes);
         return new BigInteger("2").pow(8 * (e - 3)).multiply(
             new BigInteger(i + ""));
+    }
+    
+    
+    // -------------------------------------------------------------------------
+    /**
+     * Returns the specified target in Short-Format.
+     * 
+     * @param target
+     *            BigInteger target
+     * @return Returns the Short-Format target representing the expanded
+     *         BigInteger target
+     */
+    public static int getTarget(BigInteger target)
+    {
+        String bi = target.toString(16);
+        String coeff = "";
+        for (int i = 0; 6 > i; i++)
+        {
+            coeff += bi.charAt(i);
+        }
+        ByteBuffer tarBytes = ByteBuffer.allocate(4);
+        tarBytes.put((byte) ((bi.length() - coeff.length()) / 2 + 3));
+        tarBytes.put(ByteUtil.hexToBytes(coeff));
+        return ByteUtil.bytesToInt(tarBytes.array());
     }
 
 
