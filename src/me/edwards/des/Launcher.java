@@ -17,6 +17,7 @@
 package me.edwards.des;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
@@ -31,6 +32,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Scanner;
+import java.util.logging.FileHandler;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -147,15 +150,31 @@ public class Launcher
      */
     public static void main(String[] args)
     {
+        for (int i = 0; args.length > i; i++)
+        {
+            if (args[i].equalsIgnoreCase("-dir"))
+            {
+                DIR = args[++i];
+            }
+        }
+        
         try
         {
+            File f = new File(DIR + "logs/");
+            if (!f.exists())
+            {
+                f.mkdirs();
+            }
             LogManager.getLogManager().readConfiguration(
                 Node.class.getClassLoader().getResourceAsStream(
                     "me/edwards/des/rec/log.config"));
+            Handler fh = new FileHandler(DIR + "logs/des_%u.log");
+            Logger.getLogger("DES").addHandler(fh);
         }
         catch (IOException e)
         {
             System.out.println("Could not initialize logger! Shutting down...");
+            e.printStackTrace();
             System.exit(0);
         }
         
@@ -165,11 +184,7 @@ public class Launcher
         {
             try
             {
-                if (args[i].equalsIgnoreCase("-dir"))
-                {
-                    DIR = args[++i];
-                }
-                else if (args[i].equalsIgnoreCase("-peer"))
+                if (args[i].equalsIgnoreCase("-peer"))
                 {
                     node.peerList.add(args[++i]);
                 }
