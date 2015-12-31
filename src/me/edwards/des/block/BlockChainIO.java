@@ -68,12 +68,13 @@ public class BlockChainIO
             fileName = fileName.substring(0, fileName.length() - 6);
         }
 
+        long time = System.currentTimeMillis();
+        
         byte[][] bytes = bc.getBytes();
 
         Launcher.GLOBAL.info("Saving BlockChain to \"" + fileName
             + ".block\" (" + bc.getSize() + " blocks, " + bytes.length
             + " partitions)...");
-        long time = System.currentTimeMillis();
 
         ZipOutputStream zout =
             new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(
