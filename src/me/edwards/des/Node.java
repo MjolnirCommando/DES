@@ -82,7 +82,7 @@ public class Node
     /**
      * Default Packet Buffer Size
      */
-    public static final int         BUFFER_SIZE     = 4096;
+    public static final int         BUFFER_SIZE     = 1024 * 64;
 
     /**
      * Threshold number of Ballots required to begin mining a Block. This number
@@ -216,6 +216,7 @@ public class Node
         {
             socket = new ServerSocket(port);
             socket.setReceiveBufferSize(BUFFER_SIZE);
+            
             ip = InetAddress.getLocalHost();
             port = socket.getLocalPort();
             if (name == null)
@@ -1136,13 +1137,13 @@ public class Node
         int size = Math.min(BLOCK_THRESHOLD, ballots.size());
         for (int i = 0; size > i; i++)
         {
-            tempBallot.add(ballots.get(0));
+            tempBallot.add(ballots.get(i));
         }
         blockGen = new Thread(new Runnable() {
             @Override
             public void run()
             {
-                logger.info("Generating Block...");
+                logger.info("Generating Block for " + tempBallot.size() + " Ballots...");
                 long time = System.currentTimeMillis();
                 blockGenHash = blockChain.getTop().getHash();
                 Block b =
@@ -1155,7 +1156,13 @@ public class Node
                         + " seconds!\n" + b.toString());
                     for (int i = 0; tempBallot.size() > i; i++)
                     {
-                        ballots.remove(tempBallot.get(i));
+                        for (int j = 0; ballots.size() > j; j++)
+                        {
+                            if (ballots.get(j).getID().equalsIgnoreCase(tempBallot.get(i).getID()))
+                            {
+                                ballots.remove(j--);
+                            }
+                        }
                     }
                     logger.info("Adding block to BlockChain...");
                     blockChain.append(b);
