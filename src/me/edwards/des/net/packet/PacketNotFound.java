@@ -20,7 +20,6 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import me.edwards.des.net.packet.PacketInv.InvVector;
 import me.edwards.des.util.ByteUtil;
-import me.edwards.des.util.HashUtil;
 
 //-----------------------------------------------------------------------------
 /**
