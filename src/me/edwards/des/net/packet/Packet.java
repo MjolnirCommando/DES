@@ -110,7 +110,7 @@ public abstract class Packet
         out.append(nf.format(line++) + ": 0x" + toHex(data[index++]) + " "
             + toHex(data[index++]) + toHex(data[index++]) + " "
             + toHex(data[index++]) + toHex(data[index++]));
-        out.append("                         HEADER\n");
+        out.append("                          HEADER\n");
 
         while (index < data.length)
         {
