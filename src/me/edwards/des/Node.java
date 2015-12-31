@@ -82,14 +82,14 @@ public class Node
     /**
      * Default Packet Buffer Size
      */
-    public static final int         BUFFER_SIZE     = 1024 * 64;
+    public static final int         BUFFER_SIZE     = 8192;
 
     /**
      * Threshold number of Ballots required to begin mining a Block. This number
      * is also the maximum number of Ballots allowed in a Block, configurable to
      * each indiviual Node.
      */
-    public static final int         BLOCK_THRESHOLD = 2000;
+    public static final int         BLOCK_THRESHOLD = 500;
 
     /**
      * Minimum amount of time (in seconds) to begin mining a Block
@@ -837,6 +837,8 @@ public class Node
             }
             case BLOCK:
             {
+                try
+                {
                 PacketBlock packet = new PacketBlock(data);
                 logger.info("Received block " + packet.getBlock().getHash()
                     + "!");
@@ -940,6 +942,11 @@ public class Node
                     }
                 }, "Block Validation " + packet.getBlock().getHash()).start();
                 return;
+                }
+                catch (Exception e)
+                {
+                    System.out.println(Packet.toString(data));
+                }
             }
             case GETBLOCKS:
             {

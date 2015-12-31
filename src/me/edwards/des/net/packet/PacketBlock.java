@@ -68,7 +68,7 @@ public class PacketBlock
         data.position(1);
         int size = data.getInt();
         byte[] bytes = new byte[size - 5];
-        data.get(bytes, 0, size - 5);
+        data.get(bytes);
         this.block = new Block(bytes);
     }
 

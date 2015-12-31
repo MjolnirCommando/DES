@@ -130,7 +130,7 @@ public class Block
         {
             int size = data.getInt();
             byte[] bytes = new byte[size];
-            data.get(bytes, 0, size);
+            data.get(bytes);
             this.ballots.add(new Ballot(bytes));
         }
         this.merkleRootHash =
