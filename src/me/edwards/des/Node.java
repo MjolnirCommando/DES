@@ -85,9 +85,11 @@ public class Node
     public static final int         BUFFER_SIZE     = 4096;
 
     /**
-     * Threshold number of Ballots required to begin mining a Block
+     * Threshold number of Ballots required to begin mining a Block. This number
+     * is also the maximum number of Ballots allowed in a Block, configurable to
+     * each indiviual Node.
      */
-    public static final int         BLOCK_THRESHOLD = 2000;
+    public static final int         BLOCK_THRESHOLD = 200;
 
     /**
      * Minimum amount of time (in seconds) to begin mining a Block
@@ -168,7 +170,7 @@ public class Node
      * prevents unsolicited data from being accepted by the Node.
      */
     private ArrayList<String>       dataRequests;
-
+    
     /**
      * This thread accepts handshakes from new, previously unknown peers on the
      * network.
@@ -321,6 +323,7 @@ public class Node
             logger.info("Stopping Node...");
             running = false;
 
+            stopBlockGeneration();
             if (socket != null)
             {
                 try
@@ -343,7 +346,6 @@ public class Node
                 blockGenTimer.interrupt();
                 blockGenTimer = null;
             }
-            stopBlockGeneration();
             logger.info("Node stopped!");
         }
     }
@@ -710,20 +712,23 @@ public class Node
                         /*
                          * Check that Ballot was requested and not unsolicited.
                          */
-                        
+
                         if (!dataRequests.remove(b.getRoot()))
                         {
-                            logger.fine("Ballot " + b.getID() + " is unsolicited.");
+                            logger.fine("Ballot " + b.getID()
+                                + " is unsolicited.");
                             return;
                         }
-                        
+
                         /*
-                         * Check that Ballot is not too large to be saved (closing a possible crashing vector).
+                         * Check that Ballot is not too large to be saved
+                         * (closing a possible crashing vector).
                          */
-                        
+
                         if (b.getBytes().length >= BlockChain.MAXIMUM_BLOCK_SIZE - 60)
                         {
-                            logger.fine("Ballot " + b.getID() + " is too large.");
+                            logger.fine("Ballot " + b.getID()
+                                + " is too large.");
                             return;
                         }
 
@@ -737,7 +742,8 @@ public class Node
                             if (ballots.get(i).getID()
                                 .equalsIgnoreCase(b.getID()))
                             {
-                                logger.fine("Ballot " + b.getID() + " is a duplicate.");
+                                logger.fine("Ballot " + b.getID()
+                                    + " is a duplicate.");
                                 return;
                             }
                         }
@@ -745,47 +751,61 @@ public class Node
                         /*
                          * Check that Ballot is not currently in the BlockChain.
                          */
-                        
+
                         if (blockChain.hasBallot(b.getID()))
                         {
-                            logger.fine("Ballot " + b.getID() + " is already in the BlockChain.");
+                            logger.fine("Ballot " + b.getID()
+                                + " is already in the BlockChain.");
                             return;
                         }
-                        
+
                         /*
                          * Check with Election Authority that the Ballot was
-                         * submitted. Validate signature using the public key stored by the Election Authority.
+                         * submitted. Validate signature using the public key
+                         * stored by the Election Authority.
                          * 
                          * NOTE: This must be changed when an actual Election
                          * Authority database is used.
                          */
-                        
+
                         if (demo)
                         {
                             ECPublicKey publicKey = Submitter.getKey(b.getID());
-                            
+
                             if (publicKey == null)
                             {
-                                logger.fine("Ballot " + b.getID() + " was not cast.");
+                                logger.fine("Ballot " + b.getID()
+                                    + " was not cast.");
                                 return;
                             }
-                            
+
                             try
                             {
-                                Signature dsa = Signature.getInstance("SHA1withECDSA");
-                                byte[] signature = ByteUtil.hexToBytes(b.getSignature().startsWith("0") ? b.getSignature().replaceFirst("0+", ""): b.getSignature());
+                                Signature dsa =
+                                    Signature.getInstance("SHA1withECDSA");
+                                byte[] signature =
+                                    ByteUtil.hexToBytes(b.getSignature()
+                                        .startsWith("0") ? b.getSignature()
+                                        .replaceFirst("0+", "") : b
+                                        .getSignature());
                                 dsa.initVerify(publicKey);
-                                dsa.update(ByteUtil.hexToBytes(b.getSignatureRoot()));
-                                
+                                dsa.update(ByteUtil.hexToBytes(b
+                                    .getSignatureRoot()));
+
                                 if (!dsa.verify(signature))
                                 {
-                                    logger.fine("Ballot " + b.getID() + " had invalid signature.");
+                                    logger.fine("Ballot " + b.getID()
+                                        + " had invalid signature.");
                                     return;
                                 }
                             }
                             catch (Exception e)
                             {
-                                logger.log(Level.WARNING, "Could not validate signature of Ballot " + b.getID(), e);
+                                logger.log(
+                                    Level.WARNING,
+                                    "Could not validate signature of Ballot "
+                                        + b.getID(),
+                                    e);
                                 return;
                             }
                         }
@@ -795,18 +815,18 @@ public class Node
                              * This is where Election Authority checks would go.
                              */
                         }
-                        
+
                         /*
                          * Ballot is valid, add it to the Ballot pool.
                          */
-                            
+
                         ballots.add(b);
-                        
+
                         if (ballots.size() >= BLOCK_THRESHOLD)
                         {
                             generateBlock();
                         }
-                        
+
                         PacketInv inv = new PacketInv();
                         inv.addInv(b);
                         sendToAll(inv);
@@ -824,19 +844,98 @@ public class Node
                     @Override
                     public void run()
                     {
-                        // TODO
+                        /*
+                         * Check that Block was requested and not unsolicited.
+                         */
+
                         if (!dataRequests.remove(b.getHash()))
                         {
+                            logger.info("Block " + b.getHash()
+                                + " is unsolicited.");
                             return;
                         }
+
+                        /*
+                         * Check that Block is not too large to be saved
+                         * (closing a possible crashing vector).
+                         */
+
+                        if (b.getBytes().length >= BlockChain.MAXIMUM_BLOCK_SIZE)
+                        {
+                            logger.info("Block " + b.getHash()
+                                + " is too large.");
+                            return;
+                        }
+                        
+                        /*
+                         * Check that Block is not currently in the BlockChain.
+                         */
+
                         if (blockChain.contains(b.getHash()))
                         {
+                            logger.info("Block " + b.getHash()
+                                + " is already in the BlockChain.");
                             return;
                         }
+                        
+                        /*
+                         * Check that the Block has a satisfactory and valid
+                         * Proof of Work. Also validates the Merkle Root.
+                         */
+                        
+                        if (!b.validate())
+                        {
+                            logger.info("Block " + b.getHash()
+                                + " is invalid.");
+                            return;
+                        }
+                        
+                        /*
+                         * Check that Block timestamp is within reasonable
+                         * bounds. (1 hour ahead of this Node's time and greater
+                         * than the mean time of the previous Blocks.)
+                         */
+                        
+                        if (b.getTime() > System.currentTimeMillis() / 60000 + 60
+                            || (blockChain.contains(b.getPrevHash()) && b
+                                .getTime() < blockChain.getMedianTime(b
+                                .getPrevHash())))
+                        {
+                            logger.info("Block " + b.getHash()
+                                + " was mined at an invalid time.");
+                            return;
+                        }
+
+                        //TODO Check Ballots
+                        
+                        /*
+                         * Block is valid. Stop current Block Generation if the
+                         * parents match, and synchronize Ballots.
+                         */
+                        
+                        if (blockGenHash != null && b.getPrevHash().equalsIgnoreCase(blockGenHash))
+                        {
+                            stopBlockGeneration();
+                        }
+                        
+                        ArrayList<Ballot> bBallots = b.getBallots();
+                        for (int i = 0; bBallots.size() > i; i++)
+                        {
+                            for (int j = 0; ballots.size() > j; j++)
+                            {
+                                if (ballots.get(j).getID()
+                                    .equalsIgnoreCase(bBallots.get(i).getID()))
+                                {
+                                    ballots.remove(j--);
+                                }
+                            }
+                        }
+                        
                         blockChain.append(b);
                         PacketInv inv = new PacketInv();
                         inv.addInv(b);
                         sendToAll(inv);
+                        generateBlock();
                     }
                 }, "Block Validation " + packet.getBlock().getHash()).start();
                 return;
@@ -1029,16 +1128,15 @@ public class Node
      */
     public void generateBlock()
     {
-        if (blockGen != null || ballots.size() == 0)
+        if (blockGen != null || ballots.size() == 0 || !running)
         {
             return;
         }
         final ArrayList<Ballot> tempBallot = new ArrayList<Ballot>();
-        int size = ballots.size();
+        int size = Math.min(BLOCK_THRESHOLD, ballots.size());
         for (int i = 0; size > i; i++)
         {
             tempBallot.add(ballots.get(0));
-            ballots.remove(0);
         }
         blockGen = new Thread(new Runnable() {
             @Override
@@ -1049,20 +1147,32 @@ public class Node
                 blockGenHash = blockChain.getTop().getHash();
                 Block b =
                     new Block(blockGenHash, Block.MAXIMUM_TARGET, tempBallot);
-                b.genProof();
-                logger.info("Generated Block in "
-                    + ((System.currentTimeMillis() - time) / 1000)
-                    + " seconds!\n" + b.toString());
-                logger.info("Adding block to BlockChain...");
-                blockChain.append(b);
-                PacketInv inv = new PacketInv();
-                inv.addInv(b);
-                logger.info("Notifying peers of block...");
-                sendToAll(inv);
-                blockGenHash = null;
-                stopBlockGeneration();
+                try
+                {
+                    b.genProof();
+                    logger.info("Generated Block in "
+                        + ((System.currentTimeMillis() - time) / 1000)
+                        + " seconds!\n" + b.toString());
+                    for (int i = 0; tempBallot.size() > i; i++)
+                    {
+                        ballots.remove(tempBallot.get(i));
+                    }
+                    logger.info("Adding block to BlockChain...");
+                    blockChain.append(b);
+                    PacketInv inv = new PacketInv();
+                    inv.addInv(b);
+                    logger.info("Notifying peers of block...");
+                    sendToAll(inv);
+                    blockGenHash = null;
+                    blockGen = null;
+                    generateBlock();
+                }
+                catch (InterruptedException e)
+                {
+                    //
+                }
             }
-        }, "Block Generation");
+        }, "Block Generation " + blockChain.getTop().getHash());
         blockGen.start();
     }
 
@@ -1077,12 +1187,12 @@ public class Node
     {
         if (blockGen != null)
         {
+            blockGen.interrupt();
+            blockGen = null;
             if (blockGenHash != null)
             {
                 logger.info("Block generation stopped!");
             }
-            blockGen.interrupt();
-            blockGen = null;
             blockGenHash = null;
         }
     }

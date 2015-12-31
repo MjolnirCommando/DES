@@ -58,8 +58,8 @@ public class Block
      * Maximum Target value for DES
      */
     public static final int   MAXIMUM_TARGET = ByteUtil.bytesToInt(new byte[] {
-        (byte) 0x1F, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF });
-    // (byte) 0x1d, (byte) 0xF0, (byte) 0x00, (byte) 0x00});
+    //    (byte) 0x1F, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF });
+     (byte) 0x1d, (byte) 0xF0, (byte) 0x00, (byte) 0x00});
 
     
     // -------------------------------------------------------------------------
@@ -176,8 +176,9 @@ public class Block
      * Generates a {@link HashUtil#generateProof(byte[], int) Proof of Work} for
      * this block and validates the Block's contents. If the block is already
      * valid, this method will return.
+     * @throws InterruptedException Thrown if the Thread is interrupted by {@linkplain Node#stopBlockGeneration()}.
      */
-    public void genProof()
+    public void genProof() throws InterruptedException
     {
         if (valid)
         {

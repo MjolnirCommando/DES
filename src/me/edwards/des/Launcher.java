@@ -339,8 +339,8 @@ public class Launcher
                     }
                     else if (input[0].equalsIgnoreCase("stop"))
                     {
-                        BlockChainIO.save(node.blockChain, DIR + "data.block");
                         node.stop();
+                        BlockChainIO.save(node.blockChain, DIR + "data.block");
                     }
                     else if (input[0].equalsIgnoreCase("ping"))
                     {

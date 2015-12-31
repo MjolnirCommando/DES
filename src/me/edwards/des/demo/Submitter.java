@@ -242,6 +242,10 @@ public class Submitter
                 long time = System.currentTimeMillis();
                 for (String uuid : privateKeys.keySet())
                 {
+                    if (!node.isRunning())
+                    {
+                        break;
+                    }
                     int size = 0;
                     ArrayList<Vote> votes = new ArrayList<Vote>();
                     for (int i = 0; voteList.length > i; i++)

@@ -22,6 +22,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import me.edwards.des.Node;
 import me.edwards.des.block.Block;
 
 // -----------------------------------------------------------------------------
@@ -252,8 +253,9 @@ public class HashUtil
      *            the network).
      * @return Integer Proof of Work for the specified Block (Nonce to generate
      *         Block's hash)
+     * @throws InterruptedException Thrown if the Thread is interrupted by {@linkplain Node#stopBlockGeneration()}.
      */
-    public static int generateProof(byte[] bytes, int target)
+    public static int generateProof(byte[] bytes, int target) throws InterruptedException
     {
         try
         {
@@ -266,6 +268,10 @@ public class HashUtil
             BigInteger tar = Block.getTarget(target);
             while (!validateHash(digest, tar))
             {
+                if (Thread.currentThread().isInterrupted())
+                {
+                    throw new InterruptedException();
+                }
                 nonce++;
                 md.reset();
                 md.update(bytes);

@@ -422,6 +422,61 @@ public class BlockChain
         return null;
     }
     
+    
+    // -------------------------------------------------------------------------
+    /**
+     * Returns the Median Time of the last 10 (or available) Blocks.
+     * 
+     * @param hash
+     *            Hash of the Block at which to begin
+     * @return The Median Time of the last 10 Blocks, -1 if the Hash could not
+     *         be found.
+     */
+    public long getMedianTime(String hash)
+    {
+        Node n = getNode(hash);
+        if (n == null)
+        {
+            return -1;
+        }
+        int h = n.height;
+        ArrayList<Long> times = new ArrayList<Long>();
+        while (h - n.height < 10)
+        {
+            long time = n.block.getTime();
+            for (int i = 0; times.size() > i; i++)
+            {
+                if (times.get(i) >= time)
+                {
+                    times.add(i, time);
+                    break;
+                }
+            }
+            if (times.size() == 0)
+            {
+                times.add(time);
+            }
+            if (n.height > 0)
+            {
+                n = n.parent;
+            }
+            else
+            {
+                break;
+            }
+        }
+        return times.get(times.size() / 2);
+    }
+    
+
+    // -------------------------------------------------------------------------
+    /**
+     * Returns True if the specified {@linkplain Ballot} is contained in the
+     * longest branch of this BlockChain.
+     * 
+     * @param uuid UUID of the Ballot
+     * @return True if the Ballot exists, False otherwise
+     */
     public boolean hasBallot(String uuid)
     {
         Node n = top;
