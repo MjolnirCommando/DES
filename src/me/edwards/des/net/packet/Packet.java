@@ -107,7 +107,7 @@ public abstract class Packet
         int line = 0;
         int index = 0;
 
-        out.append(nf.format(line++) + ": 0x" + toHex(data[index++]) + "  "
+        out.append(nf.format(line++) + ": 0x" + toHex(data[index++]) + " "
             + toHex(data[index++]) + toHex(data[index++]) + " "
             + toHex(data[index++]) + toHex(data[index++]));
         out.append("                         HEADER\n");
