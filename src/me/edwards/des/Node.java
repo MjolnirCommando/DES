@@ -876,7 +876,7 @@ public class Node
                                 + " is too large.");
                             return;
                         }
-                        
+
                         /*
                          * Check that Block is not currently in the BlockChain.
                          */
@@ -887,25 +887,25 @@ public class Node
                                 + " is already in the BlockChain.");
                             return;
                         }
-                        
+
                         /*
                          * Check that the Block has a satisfactory and valid
                          * Proof of Work. Also validates the Merkle Root.
                          */
-                        
+
                         if (!b.validate())
                         {
-                            logger.info("Block " + b.getHash()
-                                + " is invalid.");
+                            logger
+                                .info("Block " + b.getHash() + " is invalid.");
                             return;
                         }
-                        
+
                         /*
                          * Check that Block timestamp is within reasonable
                          * bounds. (1 hour ahead of this Node's time and greater
                          * than the mean time of the previous Blocks.)
                          */
-                        
+
                         if (b.getTime() > System.currentTimeMillis() / 60000 + 60
                             || (blockChain.contains(b.getPrevHash()) && b
                                 .getTime() < blockChain.getMedianTime(b
@@ -916,18 +916,97 @@ public class Node
                             return;
                         }
 
-                        //TODO Check Ballots
-                        
+                        ArrayList<Ballot> bBallot = b.getBallots();
+                        for (int i = 0; bBallot.size() > i; i++)
+                        {
+                            /*
+                             * Check that Ballot is not currently in the
+                             * BlockChain.
+                             */
+
+                            if (blockChain.hasBallot(bBallot.get(i).getID()))
+                            {
+                                logger.info("Block " + b.getHash()
+                                    + " contains duplicate Ballot.");
+                                return;
+                            }
+
+                            /*
+                             * Check with Election Authority that the Ballot was
+                             * submitted. Validate signature using the public
+                             * key stored by the Election Authority.
+                             * 
+                             * NOTE: This must be changed when an actual
+                             * Election Authority database is used.
+                             */
+
+                            if (demo)
+                            {
+                                ECPublicKey publicKey =
+                                    Submitter.getKey(bBallot.get(i).getID());
+
+                                if (publicKey == null)
+                                {
+                                    logger.fine("Ballot "
+                                        + bBallot.get(i).getID() + " in Block "
+                                        + b.getHash() + " was not cast.");
+                                    return;
+                                }
+
+                                try
+                                {
+                                    Signature dsa =
+                                        Signature.getInstance("SHA1withECDSA");
+                                    byte[] signature =
+                                        ByteUtil.hexToBytes(bBallot.get(i)
+                                            .getSignature().startsWith("0")
+                                            ? bBallot.get(i).getSignature()
+                                                .replaceFirst("0+", "")
+                                            : bBallot.get(i).getSignature());
+                                    dsa.initVerify(publicKey);
+                                    dsa.update(ByteUtil.hexToBytes(bBallot.get(
+                                        i).getSignatureRoot()));
+
+                                    if (!dsa.verify(signature))
+                                    {
+                                        logger.fine("Ballot "
+                                            + bBallot.get(i).getID()
+                                            + " in Block " + b.getHash()
+                                            + " had invalid signature.");
+                                        return;
+                                    }
+                                }
+                                catch (Exception e)
+                                {
+                                    logger.log(
+                                        Level.WARNING,
+                                        "Could not validate signature of Ballot "
+                                            + bBallot.get(i).getID()
+                                            + " in Block " + b.getHash(),
+                                        e);
+                                    return;
+                                }
+                            }
+                            else
+                            {
+                                /*
+                                 * This is where Election Authority checks would
+                                 * go.
+                                 */
+                            }
+                        }
+
                         /*
                          * Block is valid. Stop current Block Generation if the
                          * parents match, and synchronize Ballots.
                          */
-                        
-                        if (blockGenHash != null && b.getPrevHash().equalsIgnoreCase(blockGenHash))
+
+                        if (blockGenHash != null
+                            && b.getPrevHash().equalsIgnoreCase(blockGenHash))
                         {
                             stopBlockGeneration();
                         }
-                        
+
                         ArrayList<Ballot> bBallots = b.getBallots();
                         for (int i = 0; bBallots.size() > i; i++)
                         {
@@ -940,7 +1019,7 @@ public class Node
                                 }
                             }
                         }
-                        
+
                         blockChain.append(b);
                         PacketInv inv = new PacketInv();
                         inv.addInv(b);
