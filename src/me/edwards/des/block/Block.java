@@ -302,6 +302,18 @@ public class Block
     {
         return ballots;
     }
+    
+    
+    // -------------------------------------------------------------------------
+    /**
+     * Returns the time when this Block was mined.
+     * 
+     * @return Unix Timestamp adjusted to seconds (instead of milliseconds)
+     */
+    public long getTime()
+    {
+        return time;
+    }
 
 
     // -------------------------------------------------------------------------
