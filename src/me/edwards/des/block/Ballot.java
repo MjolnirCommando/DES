@@ -50,14 +50,14 @@ public class Ballot
     /**
      * This class' Ballot version
      */
-    private static final byte VERSION = 1;
+    public static final byte VERSION = 1;
 
     
     // -------------------------------------------------------------------------
     private byte              version;
     private String            id;           // 8 bytes
     private byte[]            votes;
-    private String            signature;    // 32 bytes
+    private String            signature;    // 72 bytes
 
     private String            signatureRoot;
     private String            root;
@@ -86,27 +86,31 @@ public class Ballot
     {
         this.version = VERSION;
         this.id = HashUtil.generateLeadingZeros(id, 16);
-        this.signature = HashUtil.generateLeadingZeros(signature);
+        this.signature = HashUtil.generateLeadingZeros(signature, 144);
 
         int size = 0;
         for (int i = 0; votes.size() > i; i++)
         {
             size += votes.get(i).getBytes().length;
         }
-        ByteBuffer buffer = ByteBuffer.allocate(1 + 8 + size + 32);
+        ByteBuffer buffer = ByteBuffer.allocate(1 + 8 + size + 72);
         buffer.put(version);
         buffer.put(ByteUtil.hexToBytes(this.id));
         for (int i = 0; votes.size() > i; i++)
         {
             buffer.put(votes.get(i).getBytes());
         }
-        this.signatureRoot = HashUtil.generateHash(buffer.array());
+        int rootLength = buffer.position();
         buffer.put(ByteUtil.hexToBytes(this.signature));
         this.bytes = buffer.array();
         this.root = HashUtil.generateHash(this.bytes);
         buffer.position(9);
         this.votes = new byte[size];
         buffer.get(this.votes);
+        buffer.position(0);
+        byte[] signatureRootBytes = new byte[rootLength];
+        buffer.get(signatureRootBytes);
+        this.signatureRoot = HashUtil.generateHash(signatureRootBytes);
     }
 
 
@@ -126,10 +130,10 @@ public class Ballot
         byte[] idBytes = new byte[8];
         data.get(idBytes, 0, 8);
         this.id = ByteUtil.bytesToHex(idBytes);
-        this.votes = new byte[data.capacity() - data.position() - 32];
+        this.votes = new byte[data.capacity() - data.position() - 72];
         data.get(this.votes);
-        int rootLength = data.position() - 1;
-        byte[] signatureBytes = new byte[32];
+        int rootLength = data.position();
+        byte[] signatureBytes = new byte[72];
         data.get(signatureBytes);
         this.signature = ByteUtil.bytesToHex(signatureBytes);
         root = HashUtil.generateHash(binary);
@@ -159,7 +163,7 @@ public class Ballot
      * Returns this Ballot's signature. Used for Ballot authentication by the
      * {@link Node Node}.
      * 
-     * @return Signature as a 32-digit hexadecimal hash digest
+     * @return Signature as a 72-digit hexadecimal ECDSA signature
      */
     public String getSignature()
     {

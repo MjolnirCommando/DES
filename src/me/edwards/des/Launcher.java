@@ -448,7 +448,7 @@ public class Launcher
                             System.out.println("Root:      " + root);
                             System.out.println("Signature: "
                                 + HashUtil.generateLeadingZeros(ByteUtil
-                                    .bytesToHex(realSig)));
+                                    .bytesToHex(realSig), 144));
                             System.out.println("Pub Key X: "
                                 + HashUtil.generateLeadingZeros(pub.getW()
                                     .getAffineX().toString(16)));

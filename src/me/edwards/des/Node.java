@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.security.Signature;
 import java.security.interfaces.ECPublicKey;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -43,6 +44,7 @@ import me.edwards.des.net.packet.PacketPing;
 import me.edwards.des.net.packet.PacketPong;
 import me.edwards.des.net.packet.PacketVerack;
 import me.edwards.des.net.packet.PacketVersion;
+import me.edwards.des.util.ByteUtil;
 import me.edwards.des.util.Version;
 
 // -----------------------------------------------------------------------------
@@ -663,7 +665,7 @@ public class Node
             case BALLOT:
             {
                 PacketBallot packet = new PacketBallot(data);
-                logger.info("Received Ballot " + packet.getBallot().getRoot()
+                logger.fine("Received Ballot " + packet.getBallot().getRoot()
                     + " with UUID " + packet.getBallot().getID());
                 final Ballot b = packet.getBallot();
                 new Thread(new Runnable() {
@@ -676,7 +678,7 @@ public class Node
                         
                         if (!dataRequests.remove(b.getRoot()))
                         {
-                            logger.info("Ballot " + b.getID() + " is unsolicited.");
+                            logger.fine("Ballot " + b.getID() + " is unsolicited.");
                             return;
                         }
                         
@@ -686,7 +688,7 @@ public class Node
                         
                         if (b.getBytes().length >= BlockChain.MAXIMUM_BLOCK_SIZE - 60)
                         {
-                            logger.info("Ballot " + b.getID() + " is too large.");
+                            logger.fine("Ballot " + b.getID() + " is too large.");
                             return;
                         }
 
@@ -700,7 +702,7 @@ public class Node
                             if (ballots.get(i).getID()
                                 .equalsIgnoreCase(b.getID()))
                             {
-                                logger.info("Ballot " + b.getID() + " is a duplicate.");
+                                logger.fine("Ballot " + b.getID() + " is a duplicate.");
                                 return;
                             }
                         }
@@ -711,7 +713,7 @@ public class Node
                         
                         if (blockChain.hasBallot(b.getID()))
                         {
-                            logger.info("Ballot " + b.getID() + " is already in the BlockChain.");
+                            logger.fine("Ballot " + b.getID() + " is already in the BlockChain.");
                             return;
                         }
                         
@@ -729,11 +731,28 @@ public class Node
                             
                             if (publicKey == null)
                             {
-                                logger.info("Ballot " + b.getID() + " was not cast.");
+                                logger.fine("Ballot " + b.getID() + " was not cast.");
                                 return;
                             }
                             
-                            // TODO
+                            try
+                            {
+                                Signature dsa = Signature.getInstance("SHA1withECDSA");
+                                byte[] signature = ByteUtil.hexToBytes(b.getSignature().startsWith("0") ? b.getSignature().replaceFirst("0+", ""): b.getSignature());
+                                dsa.initVerify(publicKey);
+                                dsa.update(ByteUtil.hexToBytes(b.getSignatureRoot()));
+                                
+                                if (!dsa.verify(signature))
+                                {
+                                    logger.fine("Ballot " + b.getID() + " had invalid signature.");
+                                    return;
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                logger.log(Level.WARNING, "Could not validate signature of Ballot " + b.getID(), e);
+                                return;
+                            }
                         }
                         else
                         {

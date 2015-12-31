@@ -22,22 +22,27 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.PrivateKey;
 import java.security.SecureRandom;
+import java.security.Signature;
 import java.security.interfaces.ECPublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
+import java.util.logging.Level;
+import me.edwards.des.Launcher;
 import me.edwards.des.Node;
 import me.edwards.des.block.Ballot;
 import me.edwards.des.block.Vote;
 import me.edwards.des.net.packet.PacketBallot;
 import me.edwards.des.util.ByteUtil;
+import me.edwards.des.util.HashUtil;
 
 // -----------------------------------------------------------------------------
 /**
@@ -190,12 +195,15 @@ public class Submitter
         final String file,
         final Node node,
         final String[][] voteList,
-        final int duration) throws IOException
+        final int duration)
+        throws IOException
     {
-        final HashMap<String, PrivateKey> privateKeys = new HashMap<String, PrivateKey>();
-        
+        final HashMap<String, PrivateKey> privateKeys =
+            new HashMap<String, PrivateKey>();
+
         File privateFile = new File(file + "private.data");
-        BufferedInputStream privateIn = new BufferedInputStream(new FileInputStream(privateFile));
+        BufferedInputStream privateIn =
+            new BufferedInputStream(new FileInputStream(privateFile));
         while (privateIn.available() > 0)
         {
             try
@@ -203,17 +211,19 @@ public class Submitter
                 byte[] uuidBytes = new byte[8];
                 privateIn.read(uuidBytes);
                 String uuid = ByteUtil.bytesToHex(uuidBytes);
-                
+
                 byte[] lengthBytes = new byte[4];
                 privateIn.read(lengthBytes);
                 int length = ByteUtil.bytesToInt(lengthBytes);
-                
+
                 byte[] privateBytes = new byte[length];
                 privateIn.read(privateBytes);
-                
+
                 KeyFactory keyFactory = KeyFactory.getInstance("EC");
-                PKCS8EncodedKeySpec publicKeySpec = new PKCS8EncodedKeySpec(privateBytes);
-                privateKeys.put(uuid, keyFactory.generatePrivate(publicKeySpec));
+                PKCS8EncodedKeySpec publicKeySpec =
+                    new PKCS8EncodedKeySpec(privateBytes);
+                privateKeys
+                    .put(uuid, keyFactory.generatePrivate(publicKeySpec));
             }
             catch (Exception e)
             {
@@ -221,7 +231,7 @@ public class Submitter
             }
         }
         privateIn.close();
-        
+
         new Thread(new Runnable() {
             @Override
             public void run()
@@ -232,15 +242,48 @@ public class Submitter
                 long time = System.currentTimeMillis();
                 for (String uuid : privateKeys.keySet())
                 {
+                    int size = 0;
                     ArrayList<Vote> votes = new ArrayList<Vote>();
                     for (int i = 0; voteList.length > i; i++)
                     {
-                        votes.add(new Vote(i, voteList[i][rnd
-                            .nextInt(voteList[i].length)]));
+                        Vote vote =
+                            new Vote(
+                                i,
+                                voteList[i][rnd.nextInt(voteList[i].length)]);
+                        size += vote.getBytes().length;
+                        votes.add(vote);
                     }
-                    Ballot ballot = new Ballot(uuid, "0", votes);
-                    node.addDataRequest(ballot.getRoot());
-                    node.parse(new PacketBallot(ballot).getBinary(), null);
+                    
+                    ByteBuffer buffer = ByteBuffer.allocate(1 + 8 + size);
+                    buffer.put(Ballot.VERSION);
+                    buffer.put(ByteUtil.hexToBytes(uuid));
+                    for (int i = 0; votes.size() > i; i++)
+                    {
+                        buffer.put(votes.get(i).getBytes());
+                    }
+                    String signatureRoot = HashUtil.generateHash(buffer.array());
+
+                    try
+                    {
+                        Signature dsa = Signature.getInstance("SHA1withECDSA");
+                        dsa.initSign(privateKeys.get(uuid));
+                        dsa.update(ByteUtil.hexToBytes(signatureRoot));
+                        byte[] signature = dsa.sign();
+
+                        Ballot ballot =
+                            new Ballot(
+                                uuid,
+                                ByteUtil.bytesToHex(signature),
+                                votes);
+                        
+                        node.addDataRequest(ballot.getRoot());
+                        node.parse(new PacketBallot(ballot).getBinary(), null);
+                    }
+                    catch (Exception e)
+                    {
+                        Launcher.GLOBAL.log(Level.WARNING, "Submitter Error", e);
+                    }
+
                     totalBallots++;
                     long projTime =
                         (long) (time + timePerBallot * totalBallots);
