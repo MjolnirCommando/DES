@@ -19,6 +19,7 @@ package me.edwards.des.net.packet;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import me.edwards.des.net.packet.PacketInv.InvVector;
+import me.edwards.des.util.ByteUtil;
 import me.edwards.des.util.HashUtil;
 
 //-----------------------------------------------------------------------------
@@ -80,9 +81,7 @@ public class PacketNotFound
         this.type = data.getInt();
         this.hashData = new byte[32];
         data.get(hashData);
-        this.hash =
-            HashUtil.generateLeadingZeros(new BigInteger(1, hashData)
-                .toString(16));
+        this.hash = ByteUtil.bytesToHex(hashData);
     }
 
 
