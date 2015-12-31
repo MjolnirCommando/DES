@@ -16,7 +16,6 @@
 
 package me.edwards.des.net.packet;
 
-import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import me.edwards.des.net.packet.PacketInv.InvVector;
 import me.edwards.des.util.ByteUtil;
@@ -40,7 +39,6 @@ public class PacketNotFound
     // -------------------------------------------------------------------------
     private int    type;
     private String hash;
-    private byte[] hashData;
 
 
     // ~ Constructors ..........................................................
@@ -60,8 +58,6 @@ public class PacketNotFound
         super(PacketTypes.NOTFOUND.getID());
         this.type = type;
         this.hash = hash;
-        this.hashData =
-            new BigInteger(hash.replaceFirst("0{0,31}", ""), 16).toByteArray();
     }
 
 
@@ -78,7 +74,7 @@ public class PacketNotFound
         ByteBuffer data = ByteBuffer.wrap(binary);
         data.position(5);
         this.type = data.getInt();
-        this.hashData = new byte[32];
+        byte[] hashData = new byte[32];
         data.get(hashData);
         this.hash = ByteUtil.bytesToHex(hashData);
     }
@@ -120,7 +116,7 @@ public class PacketNotFound
         data.put(getID());
         data.putInt(size);
         data.putInt(type);
-        data.put(hashData);
+        data.put(ByteUtil.hexToBytes(hash));
         return data.array();
     }
 }
