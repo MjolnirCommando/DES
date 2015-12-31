@@ -947,7 +947,7 @@ public class Node
 
                                 if (publicKey == null)
                                 {
-                                    logger.fine("Ballot "
+                                    logger.info("Ballot "
                                         + bBallot.get(i).getID() + " in Block "
                                         + b.getHash() + " was not cast.");
                                     return;
@@ -969,7 +969,7 @@ public class Node
 
                                     if (!dsa.verify(signature))
                                     {
-                                        logger.fine("Ballot "
+                                        logger.info("Ballot "
                                             + bBallot.get(i).getID()
                                             + " in Block " + b.getHash()
                                             + " had invalid signature.");
