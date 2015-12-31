@@ -76,18 +76,23 @@ public class Node
      * Node's software version. Used in version authentication during the
      * handshake process.
      */
-    public static final Version     VERSION     = new Version(
-                                                    "15.12.23.1 DES_ALPHA");
+    public static final Version     VERSION         = new Version(
+                                                        "15.12.23.1 DES_ALPHA");
 
     /**
      * Default Packet Buffer Size
      */
-    public static final int         BUFFER_SIZE = 4096;
-    
+    public static final int         BUFFER_SIZE     = 4096;
+
     /**
-     * Minimum number of Ballots required to begin mining a Block
+     * Threshold number of Ballots required to begin mining a Block
      */
-    public static final int         BALLOT_GROUP = 2000;
+    public static final int         BLOCK_THRESHOLD = 2000;
+
+    /**
+     * Minimum amount of time (in seconds) to begin mining a Block
+     */
+    public static final int         BLOCK_TIME      = 60 * 5;
 
     // -------------------------------------------------------------------------
     /**
@@ -169,6 +174,12 @@ public class Node
      * network.
      */
     private Thread                  handshake;
+    
+    /**
+     * This thread initiates Block generation if the {@link Node#BLOCK_TIME
+     * time} threshold has been reached.
+     */
+    private Thread                  blockGenTimer;
 
     /**
      * This thread is used to attempt generation of new Blocks (mine a proof of
@@ -246,11 +257,30 @@ public class Node
                                 e);
                         }
                     }
-
                 }
             }
         }, "Node Handshake");
         handshake.start();
+        
+        blockGenTimer = new Thread(new Runnable() {
+            @Override
+            public void run()
+            {
+                while (running)
+                {
+                    generateBlock();
+                    try
+                    {
+                        Thread.sleep(BLOCK_TIME * 1000);
+                    }
+                    catch (InterruptedException e)
+                    {
+                        //
+                    }
+                }
+            }
+        }, "Node Block Generation Timer");
+        blockGenTimer.start();
 
         logger.info("Node started!");
 
@@ -307,6 +337,11 @@ public class Node
             {
                 handshake.interrupt();
                 handshake = null;
+            }
+            if (blockGenTimer != null)
+            {
+                blockGenTimer.interrupt();
+                blockGenTimer = null;
             }
             stopBlockGeneration();
             logger.info("Node stopped!");
@@ -767,7 +802,7 @@ public class Node
                             
                         ballots.add(b);
                         
-                        if (ballots.size() >= BALLOT_GROUP)
+                        if (ballots.size() >= BLOCK_THRESHOLD)
                         {
                             generateBlock();
                         }
