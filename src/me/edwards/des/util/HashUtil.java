@@ -193,7 +193,7 @@ public class HashUtil
     /**
      * Generates the Proof of Work for a given {@link Block Block} using the
      * Block Header. This algorithm is based on methods used in Adam Back's <a
-     * href="http://en.wikipedia.org/wiki/Hashcash>Hashcash</a>, an anti-spam
+     * href="http://en.wikipedia.org/wiki/Hashcash">Hashcash</a>, an anti-spam
      * solution for email. The generation of the Proof of Work requires the most
      * time and resources during the mining process. It is based on the
      * difficulty of finding the pre-image of a hash. Theoretically, any hash

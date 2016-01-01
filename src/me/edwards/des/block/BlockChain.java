@@ -525,10 +525,12 @@ public class BlockChain
      * Returns the current target of the BlockChain. This method is used for
      * adjusting the difficulty of mining a {@linkplain Block}.<br>
      * <br>
-     * The difficulty is adjusted by finding the difference in timestamps of the past 10 (or available) Blocks.
-     * This difference is
+     * The difficulty is adjusted by finding the difference in timestamps of the
+     * past 10 (or available) Blocks. The target is then multiplied by a scalar
+     * in order to increase or decrease the difficulty so that the actual
+     * difference matches the {@link BlockChain#BLOCK_GOAL goal difference}.
      * 
-     * @return
+     * @return Current BlockChain target in Short-Format
      */
     public int getCurrentTarget()
     {
@@ -536,7 +538,7 @@ public class BlockChain
         {
             return Block.MAXIMUM_TARGET;
         }
-        
+
         Node n = this.top;
         int time = n.getBlock().getTime();
         int h = n.height;
@@ -564,7 +566,9 @@ public class BlockChain
         }
         else
         {
-            newTarget = newTarget.multiply(new BigInteger(BLOCK_GOAL + "")).divide(new BigInteger(realTime + ""));
+            newTarget =
+                newTarget.multiply(new BigInteger(BLOCK_GOAL + "")).divide(
+                    new BigInteger(realTime + ""));
         }
         if (newTarget.compareTo(Block.getTarget(Block.MAXIMUM_TARGET)) == 1)
         {
