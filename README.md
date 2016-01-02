@@ -1,6 +1,106 @@
 # DES
 Decentralized Election System (Cutler-Bell Prize Scholarship Entry)
 
+Created by Matthew Edwards, October 15, 2015 as an entry for the Cutler-Bell Prize Scholarship.
+
+Cutler-Bell Prize Scholarship: http://www.csta.acm.org/Advocacy_Outreach/sub/Cutler-BellPrize.html
+
+GitHub Repository: https://github.com/MjolnirCommando/DES
+
+GitHub Website: http://mjolnircommando.github.io/DES/
+
+
+
+
+## How to Use
+
+### Download
+
+Download the JAR File (http://mjolnircommando.github.io/DES/DES.jar). This JAR File is runnable on its own, but for full functionality, it should be run from the command-line. To see the code or clone the repository, go to https://github.com/MjolnirCommando/DES .
+
+### Application Commands
+
+A running Node is able to accept several commands. These commands should only be used by advanced users.
+
+(Parentheses) indicate an optional parameter
+
+&lt;Braces&gt; indicate a required parameter
+
+| Command          | Usage                                               | Description
+|------------------|-----------------------------------------------------|--------------
+| ```stop```       | ```stop```                                          | Stops the Node, saving the BlockChain to "data.block"
+| ```ping```       | ```ping <IP ADDRESS>```                             | Pings a connected peer Node
+| ```connect```    | ```connect (IP ADDRESS)```                          | Connects to a peer Node. If no address is specified, the Node will connect to a Node on the localhost with a port number one less than the current Node.
+| ```getaddr```    | ```getaddr <IP ADDRESS>```                          | Sends a GETADDR packet to the specified peer Node
+| ```myaddr```     | ```myaddr```                                        | Prints this Node's address
+| ```addr```       | ```addr```                                          | Prints the addresses of all known peer Nodes
+| ```testload```   | ```testload (BLOCKS) (BALLOTS) (BLOCKCHAIN FILE)``` | Performs a saving load test on this Node. For advanced users only
+
+
+
+
+### Run from the Command-Line
+
+The Launcher class accepts several command-line arguments through its main method.
+
+In order to run properly, DES requires its own working directory which can be specified with ```-dir <Directory>```. DES will automatically create the specified directory and populate it with its working files. If no directory is specified, it will use the user's Desktop and create a new folder called "DES".
+
+DES also requires several generated files in this directory, such as "data.block". If you are attempting to run the application in demonstration mode, it must also have an ID database.
+
+
+#### Starting from Scratch
+
+When starting from scratch, the JAR File must be run from the command-line in order to generate the necessary files:
+
+1) ```java -jar DES.jar -dir DIRECTORY -gen```
+   
+   Generates "data.block" in the specified directory, then exits.
+
+2) ```java -jar DES.jar -dir DIRECTORY -genids NUMBER_OF_IDS DIRECTORY```
+   
+   Generates ID Databases (so the Election Authority can be simulated).
+
+3) ```java -jar DES.jar -demo -peer PEER_IP```
+   
+   Starts a Node in demonstration mode. It will load the public.data database file generated in step 2. The Node will attempt to connect to the specified peer. (Specifying a peer is optional).
+
+4) ```java -jar DES.jar -demo -submit TIME -peer PEER_IP```
+   
+   Starts a Node in demonstration mode. It will load the private.data database file generated in step 2. It will submit Ballots within the specified timeframe (so the Election Application can be simulated). The Node will attempt to connect to the specified peer. (Specifying a peer is optional).
+
+#### Command-Line Arguments
+
+http://mjolnircommando.github.io/DES/doc/me/edwards/des/Launcher.html#main(java.lang.String[])
+
+(Parentheses) indicate an optional parameter
+
+&lt;Braces&gt; indicate a required parameter
+
+| Flag          | Usage                                     | Description
+|---------------|-------------------------------------------|--------------
+| ```-count```  | ```-count (BlockChain File)```            | Tabulates the results of the specified BlockChain after loading it from file. If no BlockChain is specified, the default BlockChain is used.
+| ```-demo```   | ```-demo```                               | Starts the Node in demonstration mode.
+| ```-dir```    | ```-dir <Directory>```                    | Sets the working directory of the Node.
+| ```-gen```    | ```-gen```                                | Generates a Genesis Block and saves it to "generated_blockchain.block" in the working directory.
+| ```-genids``` | ```-genids <Number of IDs> (Directory)``` | Generates key databases for demonstration purposes.
+| ```-name```   | ```-name <Name>```                        | Sets the human-readable name of the Node.
+| ```-peer```   | ```-peer <Peer>```                        | Adds an initial peer to the Node which will be contacted during the Bootstrapping process.
+| ```-port```   | ```-port <Port>```                        | Sets the port to be used by the Node.
+| ```-submit``` | ```-submit (Time in seconds)```           | Adds a Submitter to the Node for demonstration purposes. If a time is specified, it will submit the available number of Ballots within that timeframe
+
+
+
+
+
+## Documentation
+
+Find the Java documentation at http://mjolnircommando.github.io/DES/doc/
+
+
+
+
+## About
+
 ### Vision and Design Process
 
 As I graduate from high school, one of my new responsibilities will be voting. I am very politically informed, and I credit this to my experience with debate throughout high school. Voting is something I hold in high regard; however, I realize how often most people do not exercise their right to vote. In the United States, regional elections are considered very successful if close to half of the citizenry participate. Federal elections often see just over half of eligible citizens casting ballots. This was puzzling to me and led me to inquire why people did not vote, even though it is a civic responsibility and gives each person a voice in government. What I found was that generally younger voters, voters who have non-professional jobs, and voters who experience economic hardship are less likely to exercise their right to vote. For me this posed a pressing ethical dilemma: why and how does the election system cause the disenfranchisement of the young and the underprivileged? The ability to vote should be readily available to everyone who has a right to vote. I propose a new strategy for internet voting that will encourage and enable all citizens to participate, providing a solution which would change the way people vote in a democracy. Computing already plays a major role in today’s society, and I believe that computer science in the future will not only advance technology, but also provide solutions to social problems.
