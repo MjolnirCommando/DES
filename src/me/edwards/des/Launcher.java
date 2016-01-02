@@ -264,7 +264,7 @@ public class Launcher
                     GLOBAL.info("Adding a Submitter to this Node...");
                     i++;
                     final int t =
-                        args.length > i + 1
+                        args.length > i
                             ? Integer.parseInt(args[i++])
                             : 40 * 60;
                     new Thread(new Runnable() {
