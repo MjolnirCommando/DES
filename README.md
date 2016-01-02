@@ -3,13 +3,15 @@ Decentralized Election System (Cutler-Bell Prize Scholarship Entry)
 
 Created by Matthew Edwards, October 15, 2015 as an entry for the Cutler-Bell Prize Scholarship.
 
-Cutler-Bell Prize Scholarship: http://www.csta.acm.org/Advocacy_Outreach/sub/Cutler-BellPrize.html
+## Links
 
-GitHub Repository: https://github.com/MjolnirCommando/DES
+[Cutler-Bell Prize Scholarship](http://www.csta.acm.org/Advocacy_Outreach/sub/Cutler-BellPrize.html)
 
-GitHub Website: http://mjolnircommando.github.io/DES/
+[GitHub Repository](https://github.com/MjolnirCommando/DES)
 
+[GitHub Website](http://mjolnircommando.github.io/DES/)
 
+[Google Slides Presentation](https://docs.google.com/presentation/d/1Hp62kSNlg7fR3QsJYX39fGhO48mPnoTNf57le9FmlSI/edit?usp=sharing)
 
 
 ## How to Use
