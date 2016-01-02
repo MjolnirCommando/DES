@@ -18,6 +18,10 @@ Created by Matthew Edwards, October 15, 2015 as an entry for the Cutler-Bell Pri
 
 ## How to Use
 
+### Video
+
+[![Screenshot](http://mjolnircommando.github.io/DES/screenshot-setup.png)](http://mjolnircommando.github.io/DES/setup.mov)
+
 ### Download
 
 Download the JAR File (http://mjolnircommando.github.io/DES/DES.jar). This JAR File is runnable on its own, but for full functionality, it should be run from the command-line. To see the code or clone the repository, go to https://github.com/MjolnirCommando/DES .
