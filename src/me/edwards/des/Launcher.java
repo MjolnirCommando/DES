@@ -84,8 +84,7 @@ public class Launcher
      * <thead>
      * <td><strong>Flag</strong></td>
      * <td><strong>Usage</strong></td>
-     * <td><strong>Description</strong></td>
-     * </thead>
+     * <td><strong>Description</strong></td> </thead>
      * <tr>
      * <td>-count</td>
      * <td>-count (BlockChain File)</td>
@@ -133,8 +132,10 @@ public class Launcher
      * </tr>
      * <tr>
      * <td>-submit</td>
-     * <td>-submit</td>
-     * <td>Adds a Submitter to the Node for demonstration purposes.</td>
+     * <td>-submit (Time in seconds)</td>
+     * <td>Adds a Submitter to the Node for demonstration purposes. If a time is
+     * specified, it will submit the available number of Ballots within that
+     * timeframe.</td>
      * </tr>
      * </table>
      * 
@@ -261,6 +262,11 @@ public class Launcher
                 else if (args[i].equalsIgnoreCase("-submit"))
                 {
                     GLOBAL.info("Adding a Submitter to this Node...");
+                    i++;
+                    final int t =
+                        args.length > i + 1
+                            ? Integer.parseInt(args[i++])
+                            : 40 * 60;
                     new Thread(new Runnable() {
                         @Override
                         public void run()
@@ -278,7 +284,7 @@ public class Launcher
                                     DIR,
                                     node,
                                     voteList,
-                                    38 * 60 * 1000 / 38);
+                                    t * 1000);
                             }
                             catch (Exception e)
                             {
