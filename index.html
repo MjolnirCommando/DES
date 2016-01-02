@@ -36,6 +36,182 @@
 
 <p>Decentralized Election System (Cutler-Bell Prize Scholarship Entry)</p>
 
+<p>Created by Matthew Edwards, October 15, 2015 as an entry for the Cutler-Bell Prize Scholarship.</p>
+
+<p>Cutler-Bell Prize Scholarship: <a href="http://www.csta.acm.org/Advocacy_Outreach/sub/Cutler-BellPrize.html">http://www.csta.acm.org/Advocacy_Outreach/sub/Cutler-BellPrize.html</a></p>
+
+<p>GitHub Repository: <a href="https://github.com/MjolnirCommando/DES">https://github.com/MjolnirCommando/DES</a></p>
+
+<p>GitHub Website: <a href="http://mjolnircommando.github.io/DES/">http://mjolnircommando.github.io/DES/</a></p>
+
+<h2>
+<a id="how-to-use" class="anchor" href="#how-to-use" aria-hidden="true"><span class="octicon octicon-link"></span></a>How to Use</h2>
+
+<h3>
+<a id="download" class="anchor" href="#download" aria-hidden="true"><span class="octicon octicon-link"></span></a>Download</h3>
+
+<p>Download the JAR File (<a href="http://mjolnircommando.github.io/DES/DES.jar">http://mjolnircommando.github.io/DES/DES.jar</a>). This JAR File is runnable on its own, but for full functionality, it should be run from the command-line. To see the code or clone the repository, go to <a href="https://github.com/MjolnirCommando/DES">https://github.com/MjolnirCommando/DES</a> .</p>
+
+<h3>
+<a id="application-commands" class="anchor" href="#application-commands" aria-hidden="true"><span class="octicon octicon-link"></span></a>Application Commands</h3>
+
+<p>A running Node is able to accept several commands. These commands should only be used by advanced users.</p>
+
+<p>(Parentheses) indicate an optional parameter</p>
+
+<p>&lt;Braces&gt; indicate a required parameter</p>
+
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Usage</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>stop</code></td>
+<td><code>stop</code></td>
+<td>Stops the Node, saving the BlockChain to "data.block"</td>
+</tr>
+<tr>
+<td><code>ping</code></td>
+<td><code>ping &lt;IP ADDRESS&gt;</code></td>
+<td>Pings a connected peer Node</td>
+</tr>
+<tr>
+<td><code>connect</code></td>
+<td><code>connect (IP ADDRESS)</code></td>
+<td>Connects to a peer Node. If no address is specified, the Node will connect to a Node on the localhost with a port number one less than the current Node.</td>
+</tr>
+<tr>
+<td><code>getaddr</code></td>
+<td><code>getaddr &lt;IP ADDRESS&gt;</code></td>
+<td>Sends a GETADDR packet to the specified peer Node</td>
+</tr>
+<tr>
+<td><code>myaddr</code></td>
+<td><code>myaddr</code></td>
+<td>Prints this Node's address</td>
+</tr>
+<tr>
+<td><code>addr</code></td>
+<td><code>addr</code></td>
+<td>Prints the addresses of all known peer Nodes</td>
+</tr>
+<tr>
+<td><code>testload</code></td>
+<td><code>testload (BLOCKS) (BALLOTS) (BLOCKCHAIN FILE)</code></td>
+<td>Performs a saving load test on this Node. For advanced users only</td>
+</tr>
+</tbody>
+</table>
+
+<h3>
+<a id="run-from-the-command-line" class="anchor" href="#run-from-the-command-line" aria-hidden="true"><span class="octicon octicon-link"></span></a>Run from the Command-Line</h3>
+
+<p>The Launcher class accepts several command-line arguments through its main method.</p>
+
+<p>In order to run properly, DES requires its own working directory which can be specified with <code>-dir &lt;Directory&gt;</code>. DES will automatically create the specified directory and populate it with its working files. If no directory is specified, it will use the user's Desktop and create a new folder called "DES".</p>
+
+<p>DES also requires several generated files in this directory, such as "data.block". If you are attempting to run the application in demonstration mode, it must also have an ID database.</p>
+
+<h4>
+<a id="starting-from-scratch" class="anchor" href="#starting-from-scratch" aria-hidden="true"><span class="octicon octicon-link"></span></a>Starting from Scratch</h4>
+
+<p>When starting from scratch, the JAR File must be run from the command-line in order to generate the necessary files:</p>
+
+<p>1) <code>java -jar DES.jar -dir DIRECTORY -gen</code></p>
+
+<p>Generates "data.block" in the specified directory, then exits.</p>
+
+<p>2) <code>java -jar DES.jar -dir DIRECTORY -genids NUMBER_OF_IDS DIRECTORY</code></p>
+
+<p>Generates ID Databases (so the Election Authority can be simulated).</p>
+
+<p>3) <code>java -jar DES.jar -demo -peer PEER_IP</code></p>
+
+<p>Starts a Node in demonstration mode. It will load the public.data database file generated in step 2. The Node will attempt to connect to the specified peer. (Specifying a peer is optional).</p>
+
+<p>4) <code>java -jar DES.jar -demo -submit TIME -peer PEER_IP</code></p>
+
+<p>Starts a Node in demonstration mode. It will load the private.data database file generated in step 2. It will submit Ballots within the specified timeframe (so the Election Application can be simulated). The Node will attempt to connect to the specified peer. (Specifying a peer is optional).</p>
+
+<h4>
+<a id="command-line-arguments" class="anchor" href="#command-line-arguments" aria-hidden="true"><span class="octicon octicon-link"></span></a>Command-Line Arguments</h4>
+
+<p><a href="http://mjolnircommando.github.io/DES/doc/me/edwards/des/Launcher.html#main(java.lang.String%5B%5D)">http://mjolnircommando.github.io/DES/doc/me/edwards/des/Launcher.html#main(java.lang.String[])</a></p>
+
+<p>(Parentheses) indicate an optional parameter</p>
+
+<p>&lt;Braces&gt; indicate a required parameter</p>
+
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Usage</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-count</code></td>
+<td><code>-count (BlockChain File)</code></td>
+<td>Tabulates the results of the specified BlockChain after loading it from file. If no BlockChain is specified, the default BlockChain is used.</td>
+</tr>
+<tr>
+<td><code>-demo</code></td>
+<td><code>-demo</code></td>
+<td>Starts the Node in demonstration mode.</td>
+</tr>
+<tr>
+<td><code>-dir</code></td>
+<td><code>-dir &lt;Directory&gt;</code></td>
+<td>Sets the working directory of the Node.</td>
+</tr>
+<tr>
+<td><code>-gen</code></td>
+<td><code>-gen</code></td>
+<td>Generates a Genesis Block and saves it to "generated_blockchain.block" in the working directory.</td>
+</tr>
+<tr>
+<td><code>-genids</code></td>
+<td><code>-genids &lt;Number of IDs&gt; (Directory)</code></td>
+<td>Generates key databases for demonstration purposes.</td>
+</tr>
+<tr>
+<td><code>-name</code></td>
+<td><code>-name &lt;Name&gt;</code></td>
+<td>Sets the human-readable name of the Node.</td>
+</tr>
+<tr>
+<td><code>-peer</code></td>
+<td><code>-peer &lt;Peer&gt;</code></td>
+<td>Adds an initial peer to the Node which will be contacted during the Bootstrapping process.</td>
+</tr>
+<tr>
+<td><code>-port</code></td>
+<td><code>-port &lt;Port&gt;</code></td>
+<td>Sets the port to be used by the Node.</td>
+</tr>
+<tr>
+<td><code>-submit</code></td>
+<td><code>-submit (Time in seconds)</code></td>
+<td>Adds a Submitter to the Node for demonstration purposes. If a time is specified, it will submit the available number of Ballots within that timeframe</td>
+</tr>
+</tbody>
+</table>
+
+<h2>
+<a id="documentation" class="anchor" href="#documentation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Documentation</h2>
+
+<p>Find the Java documentation at <a href="http://mjolnircommando.github.io/DES/doc/">http://mjolnircommando.github.io/DES/doc/</a></p>
+
+<h2>
+<a id="about" class="anchor" href="#about" aria-hidden="true"><span class="octicon octicon-link"></span></a>About</h2>
+
 <h3>
 <a id="vision-and-design-process" class="anchor" href="#vision-and-design-process" aria-hidden="true"><span class="octicon octicon-link"></span></a>Vision and Design Process</h3>
 
