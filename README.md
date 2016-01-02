@@ -13,6 +13,8 @@ Created by Matthew Edwards, October 15, 2015 as an entry for the Cutler-Bell Pri
 
 [Google Slides Presentation](https://docs.google.com/presentation/d/1Hp62kSNlg7fR3QsJYX39fGhO48mPnoTNf57le9FmlSI/edit?usp=sharing)
 
+[Java Documentation](http://mjolnircommando.github.io/DES/doc/)
+
 
 ## How to Use
 
